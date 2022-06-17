@@ -2,6 +2,7 @@ function vehicleManager() {
   let totalPassenger = 0;   //乗車総人数
   let totalRentee = 0;      //借受可能総人数
 
+  let memberData = [];
   let locData = {};
   let carCombination = [];
 
@@ -10,6 +11,18 @@ function vehicleManager() {
   const outputSheet = sheetFile.getSheetByName("出力");
   const configSheet = sheetFile.getSheetByName("設定");
   const ui = SpreadsheetApp.getUi();
+
+  //memberDataに参加者情報を格納
+  var i = 2;
+  while(1){
+    var tempArray = {};
+    if(inputSheet.getRange(i, 1).isBlank() == true) break;
+    tempArray["name"] = inputSheet.getRange(i, 1).getValue();
+    tempArray["location"] = inputSheet.getRange(i, 2).getValue();
+    tempArray["driver"] = inputSheet.getRange(i, 3).getValue();
+    memberData.push(tempArray);
+    i++;
+  }
 
   //locDataに乗車地設定
   var i = 2;
@@ -36,7 +49,7 @@ function vehicleManager() {
         locData[location]["remainingRentee"]++;
       }
     }
-    i++
+    i++;
   }
 
   //借受可能人数下限エラー判定
