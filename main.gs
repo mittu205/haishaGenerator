@@ -29,11 +29,11 @@ function vehicleManager() {
   while(1){
     location = outputSheet.getRange(i, 1).getValue();
     if(outputSheet.getRange(i, 1).isBlank() == true) break;
-    locData[location] = {numPassenger: 0, numRentee: 0, remainingPassenger: 0, remainingRentee: 0};
+    locData[location] = {numPassenger: 0, numRentee: 0};
     i++;
   }
 
-  //参加者データ読み取り
+  //locDataに人数情報を格納
   var location;   //乗車地
   for(member of memberData){
     location = member["location"];
@@ -45,6 +45,12 @@ function vehicleManager() {
         locData[location]["numRentee"]++;
       }
     }
+  }
+
+  //参加者下限エラー判定
+  if(totalPassenger < 4){
+    ui.alert("エラー","参加者は4人以上としてください。",ui.ButtonSet.OK);
+    return;
   }
 
   //借受可能人数下限エラー判定
