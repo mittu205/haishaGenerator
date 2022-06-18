@@ -35,21 +35,16 @@ function vehicleManager() {
 
   //参加者データ読み取り
   var location;   //乗車地
-  var i = 2;
-  while(1){
-    location = inputSheet.getRange(i, 2).getValue();
-    if(inputSheet.getRange(i, 1).isBlank() == true) break;
+  for(member of memberData){
+    location = member["location"];
     if(location in locData){
       totalPassenger++;
       locData[location]["numPassenger"]++;
-      locData[location]["remainingPassenger"]++;
-      if(inputSheet.getRange(i, 3).getValue() == 2){
+      if(member["driver"] == 2){
         totalRentee++;
         locData[location]["numRentee"]++;
-        locData[location]["remainingRentee"]++;
       }
     }
-    i++;
   }
 
   //借受可能人数下限エラー判定
@@ -63,14 +58,14 @@ function vehicleManager() {
 
   //直行便割り当て
   var location;                 //乗車地
-  var remainingPassenger = 0;   //残りの乗車人数
-  var remainingRentee = 0;      //残りの借受可能人数
+  var numPassenger = 0;   //残りの乗車人数
+  var numRentee = 0;      //残りの借受可能人数
   var requiredRentee = 0;       //必要な借受可能人数
   for(location in locData){
-    remainingPassenger = locData[location]["remainingPassenger"];
-    remainingRentee = locData[location]["remainingRentee"];
-    requiredRentee = carCombination[0][remainingPassenger].toString().length;
-    if(requiredRentee > 0 && remainingRentee >= requiredRentee){
+    numPassenger = locData[location]["numPassenger"];
+    numRentee = locData[location]["numRentee"];
+    requiredRentee = carCombination[0][numPassenger].toString().length;
+    if(requiredRentee > 0 && numRentee >= requiredRentee){
       Logger.log(location + "配車成立");
     }
   }
