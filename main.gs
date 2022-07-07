@@ -25,10 +25,10 @@ function vehicleManager() {
   }
 
   //locDataに乗車地設定
-  var i = 2;
+  var i = 7;
   while(1){
-    location = outputSheet.getRange(i, 1).getValue();
-    if(outputSheet.getRange(i, 1).isBlank() == true) break;
+    location = configSheet.getRange(i, 1).getValue();
+    if(configSheet.getRange(i, 1).isBlank() == true) break;
     locData[location] = {numPassenger: 0, numRentee: 0};
     i++;
   }
@@ -37,13 +37,19 @@ function vehicleManager() {
   var location;   //乗車地
   for(member of memberData){
     location = member["location"];
-    if(location in locData){
-      totalPassenger++;
-      locData[location]["numPassenger"]++;
-      if(member["driver"] == 2){
-        totalRentee++;
-        locData[location]["numRentee"]++;
+    if(!(location in locData)){
+      var response = ui.alert("エラー", "乗車地「" + location + "」は既定の乗車地に含まれていません。他のすべての乗車地と等しい距離にあると仮定して処理を続行します。", ui.ButtonSet.OK_CANCEL);
+      if(response === ui.Button.OK){
+        locData[location] = {numPassenger: 0, numRentee: 0};        
+      }else{
+        return;
       }
+    }
+    totalPassenger++;
+    locData[location]["numPassenger"]++;
+    if(member["driver"] == 2){
+      totalRentee++;
+      locData[location]["numRentee"]++;
     }
   }
 
@@ -63,10 +69,10 @@ function vehicleManager() {
   carCombination = configSheet.getRange(2, 1, 2, 21).getValues();
 
   //直行便割り当て
-  var location;                 //乗車地
-  var numPassenger = 0;   //残りの乗車人数
-  var numRentee = 0;      //残りの借受可能人数
-  var requiredRentee = 0;       //必要な借受可能人数
+  var location;               //乗車地
+  var numPassenger = 0;       //残りの乗車人数
+  var numRentee = 0;          //残りの借受可能人数
+  var requiredRentee = 0;     //必要な借受可能人数
   for(location in locData){
     numPassenger = locData[location]["numPassenger"];
     numRentee = locData[location]["numRentee"];
