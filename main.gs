@@ -1,17 +1,15 @@
-function vehicleManager() {
-  let totalPassenger = 0;   //乗車総人数
-  let totalRentee = 0;      //借受可能総人数
+let memberData = [];
+let locData = {};
+let groupData = {};
 
-  let memberData = [];
-  let locData = {};
-  let groupData = {};
-  let carCombination = [];
+let totalPassenger = 0;   //乗車総人数
+let totalRentee = 0;      //借受可能総人数
 
+
+function _dataInput() {
   const sheetFile = SpreadsheetApp.getActiveSpreadsheet();
   const inputSheet = sheetFile.getSheetByName("入力");
-  const outputSheet = sheetFile.getSheetByName("出力");
   const configSheet = sheetFile.getSheetByName("設定");
-  const ui = SpreadsheetApp.getUi();
 
   //memberDataに参加者情報を格納
   var i = 2;
@@ -33,6 +31,32 @@ function vehicleManager() {
     locData[location] = {numPassenger: 0, numRentee: 0};
     i++;
   }
+}
+
+
+function _dataOutput() {
+  const sheetFile = SpreadsheetApp.getActiveSpreadsheet();
+  const outputSheet = sheetFile.getSheetByName("出力");
+
+  //結果出力
+  var location;
+  var i = 2;
+  for(location in groupData){
+    outputSheet.getRange(i, 1).setValue(location);
+    outputSheet.getRange(i, 2).setValue(groupData[location]["numRentee"]);
+    outputSheet.getRange(i, 3).setValue(groupData[location]["numPassenger"]);
+    i++;
+  }
+  outputSheet.getRange(i, 1).setValue("合計");
+  outputSheet.getRange(i, 2).setValue(totalRentee);
+  outputSheet.getRange(i, 3).setValue(totalPassenger);
+}
+
+
+function vehicleManager() {
+  const ui = SpreadsheetApp.getUi();
+
+  _dataInput();
 
   //locDataに人数情報を格納
   var location;   //乗車地
@@ -60,9 +84,6 @@ function vehicleManager() {
     return;
   }
 
-  //設定読み込み
-  carCombination = configSheet.getRange(2, 1, 2, 21).getValues();
-
   //直行便割り当て
   var location;               //乗車地
   var numPassenger = 0;       //残りの乗車人数
@@ -85,16 +106,5 @@ function vehicleManager() {
     }
   }
 
-  //結果出力
-  var location;
-  var i = 2;
-  for(location in groupData){
-    outputSheet.getRange(i, 1).setValue(location);
-    outputSheet.getRange(i, 2).setValue(groupData[location]["numRentee"]);
-    outputSheet.getRange(i, 3).setValue(groupData[location]["numPassenger"]);
-    i++;
-  }
-  outputSheet.getRange(i, 1).setValue("合計");
-  outputSheet.getRange(i, 2).setValue(totalRentee);
-  outputSheet.getRange(i, 3).setValue(totalPassenger);
+  _dataOutput();
 }
