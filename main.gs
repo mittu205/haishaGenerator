@@ -4,6 +4,7 @@ function vehicleManager() {
 
   let memberData = [];
   let locData = {};
+  let groupData = {};
   let carCombination = [];
 
   const sheetFile = SpreadsheetApp.getActiveSpreadsheet();
@@ -66,13 +67,34 @@ function vehicleManager() {
   var location;               //乗車地
   var numPassenger = 0;       //残りの乗車人数
   var numRentee = 0;          //残りの借受可能人数
-  var requiredRentee = 0;     //必要な借受可能人数
   for(location in locData){
     numPassenger = locData[location]["numPassenger"];
     numRentee = locData[location]["numRentee"];
-    requiredRentee = carCombination[0][numPassenger].toString().length;
-    if(requiredRentee > 0 && numRentee >= requiredRentee){
+    if(numRentee * 8 >= numPassenger){
+      groupData[location] = {"numPassenger": numPassenger, "numRentee": numRentee};
+      numPassenger = 0;
+      numRentee = 0;
       Logger.log(location + "配車成立");
+    }else if(numRentee > 0){
+      groupData[location] = {"numPassenger": numRentee * 8, "numRentee": numRentee};
+      numPassenger -= numRentee * 8;
+      numRentee = 0;
+      Logger.log(location + "配車一部成立");
+    }else{
+      Logger.log(location + "配車不成立");
     }
   }
+
+  //結果出力
+  var location;
+  var i = 2;
+  for(location in groupData){
+    outputSheet.getRange(i, 1).setValue(location);
+    outputSheet.getRange(i, 2).setValue(groupData[location]["numRentee"]);
+    outputSheet.getRange(i, 3).setValue(groupData[location]["numPassenger"]);
+    i++;
+  }
+  outputSheet.getRange(i, 1).setValue("合計");
+  outputSheet.getRange(i, 2).setValue(totalRentee);
+  outputSheet.getRange(i, 3).setValue(totalPassenger);
 }
