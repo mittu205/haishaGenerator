@@ -38,7 +38,7 @@ function vehicleManager() {
   for(member of memberData){
     location = member["location"];
     if(!(location in locData)){
-      var response = ui.alert("エラー", "乗車地「" + location + "」は既定の乗車地に含まれていません。他のすべての乗車地と等しい距離にあると仮定して処理を続行します。", ui.ButtonSet.OK_CANCEL);
+      var response = ui.alert("エラー", "乗車地「" + location + "」は既定の乗車地に含まれていません。他のすべての乗車地から無限遠の距離にあると仮定して処理を続行します。", ui.ButtonSet.OK_CANCEL);
       if(response === ui.Button.OK){
         locData[location] = {numPassenger: 0, numRentee: 0};        
       }else{
@@ -51,12 +51,6 @@ function vehicleManager() {
       totalRentee++;
       locData[location]["numRentee"]++;
     }
-  }
-
-  //参加者下限エラー判定
-  if(totalPassenger < 4){
-    ui.alert("エラー","参加者は4人以上としてください。",ui.ButtonSet.OK);
-    return;
   }
 
   //借受可能人数下限エラー判定
