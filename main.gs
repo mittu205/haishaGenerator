@@ -26,9 +26,14 @@ function _dataInput() {
   //locDataに乗車地設定
   var i = 7;
   while(1){
+    var j = 0;
     location = configSheet.getRange(i, 1).getValue();
     if(configSheet.getRange(i, 1).isBlank() == true) break;
-    locData[location] = {numPassenger: 0, numRentee: 0};
+    locData[location] = {numPassenger: 0, numRentee: 0, closeLoc: []};
+    while(configSheet.getRange(i, j + 3).isBlank() == false){
+      locData[location]["closeLoc"][j] = configSheet.getRange(i, j + 3).getValue();
+      j++;
+    }
     i++;
   }
 }
@@ -55,6 +60,7 @@ function _dataOutput() {
 
 function vehicleManager() {
   const ui = SpreadsheetApp.getUi();
+  let numAssigned = 0;
 
   _dataInput();
 
@@ -65,7 +71,7 @@ function vehicleManager() {
     if(!(location in locData)){
       var response = ui.alert("エラー", "乗車地「" + location + "」は既定の乗車地に含まれていません。他のすべての乗車地から無限遠の距離にあると仮定して処理を続行します。", ui.ButtonSet.OK_CANCEL);
       if(response === ui.Button.OK){
-        locData[location] = {numPassenger: 0, numRentee: 0};        
+        locData[location] = {numPassenger: 0, numRentee: 0, closeloc: []};        
       }else{
         return;
       }
@@ -93,18 +99,17 @@ function vehicleManager() {
     numRentee = locData[location]["numRentee"];
     if(numRentee * 8 >= numPassenger){
       groupData[location] = {"numPassenger": numPassenger, "numRentee": numRentee};
-      numPassenger = 0;
-      numRentee = 0;
-      Logger.log(location + "配車成立");
+      locData[location]["numPassenger"] = 0;
+      locData[location]["numRentee"] = 0;
+      numAssigned += numPassenger;
     }else if(numRentee > 0){
       groupData[location] = {"numPassenger": numRentee * 8, "numRentee": numRentee};
-      numPassenger -= numRentee * 8;
-      numRentee = 0;
-      Logger.log(location + "配車一部成立");
-    }else{
-      Logger.log(location + "配車不成立");
+      locData[location]["numPassenger"] -= numRentee * 8;
+      locData[location]["numRentee"] = 0;
+      numAssigned += numRentee * 8;
     }
   }
+  Logger.log("割り当て済み人数:" + numAssigned + "人");
 
   _dataOutput();
 }
