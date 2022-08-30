@@ -1,6 +1,7 @@
 let memberData = [];
 let locData = {};
 let groupData = {};
+let rentTable = [6,6,6,6,6,6,10,10,15];
 
 let totalPassenger = 0;   //乗車総人数
 let totalRentee = 0;      //借受可能総人数
@@ -50,7 +51,8 @@ function _dataOutput() {
     outputSheet.getRange(i, 1).setValue(location);
     outputSheet.getRange(i, 2).setValue(groupData[location]["numRentee"]);
     outputSheet.getRange(i, 3).setValue(groupData[location]["numPassenger"]);
-    outputSheet.getRange(i, 4).setValue(groupData[location]["waypoint"]);
+    outputSheet.getRange(i, 4).setValue(groupData[location]["rentfee"]);
+    outputSheet.getRange(i, 5).setValue(groupData[location]["waypoint"]);
     i++;
   }
   outputSheet.getRange(i, 1).setValue("合計");
@@ -164,6 +166,54 @@ function vehicleManager() {
           numPassenger -= vacant;            
         }        
       }
+    }
+  }
+
+  //車両数の算出
+  var group;              //配車グループ
+  for(group in groupData){
+    var dpTable = [];
+    dpTable[0] = [];
+    dpTable[0][0] = {"carCombi": [], "rentfee": Infinity};
+    var n = 1;
+    while(n <= groupData[group]["numPassenger"]){
+      if(n > 8){
+        dpTable[0][n] = {"carCombi": [], "rentfee": Infinity};
+      }else{
+        dpTable[0][n] = {"carCombi": [n], "rentfee": rentTable[n]};
+      }
+      n++;
+    }
+    var k = 1;
+    while(k < groupData[group]["numRentee"]){
+      dpTable[k] = [];
+      dpTable[k][0] = {"carCombi": [], "rentfee": Infinity};
+      var n = 1;
+      while(n <= groupData[group]["numPassenger"]){
+        dpTable[k][n] = {"carCombi": [], "rentfee": Infinity};
+        var i = 1;
+        while(i < n){
+          if(rentTable[i] + dpTable[k-1][n-i]["rentfee"] < dpTable[k][n]["rentfee"]){
+            dpTable[k][n]["carCombi"] = dpTable[k-1][n-i]["carCombi"].slice();
+            dpTable[k][n]["carCombi"].push(i);
+            dpTable[k][n]["rentfee"] = dpTable[k-1][n-i]["rentfee"] + rentTable[i];
+          }
+          i++;
+        }
+        n++;
+      }
+      k++;
+    }
+    var n = groupData[group]["numPassenger"];
+    groupData[group]["carCombi"] = dpTable[0][n]["carCombi"].slice();
+    groupData[group]["rentfee"] = dpTable[0][n]["rentfee"];
+    var k = 1;
+    while(k < groupData[group]["numRentee"]){
+      if(dpTable[k][n]["rentfee"] < groupData[group]["rentfee"]){
+        groupData[group]["carCombi"] = dpTable[k][n]["carCombi"].slice();
+        groupData[group]["rentfee"] = dpTable[k][n]["rentfee"];        
+      }
+      k++;
     }
   }
 
