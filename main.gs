@@ -1,7 +1,7 @@
 let memberData = [];
 let locData = {};
 let groupData = {};
-let rentTable = [6,6,6,6,6,6,10,10,15];
+let rentfeeTable = [];
 
 let totalPassenger = 0;   //乗車総人数
 let totalRentee = 0;      //借受可能総人数
@@ -37,6 +37,10 @@ function _dataInput() {
     }
     i++;
   }
+
+  //rentfeeTableにレンタ価格設定
+  rentfeeTable = configSheet.getRange(2, 2, 1, 9).getValues();
+  rentfeeTable = rentfeeTable[0];
 }
 
 
@@ -180,7 +184,7 @@ function vehicleManager() {
       if(n > 8){
         dpTable[0][n] = {"carCombi": [], "rentfee": Infinity};
       }else{
-        dpTable[0][n] = {"carCombi": [n], "rentfee": rentTable[n]};
+        dpTable[0][n] = {"carCombi": [n], "rentfee": rentfeeTable[n]};
       }
       n++;
     }
@@ -193,10 +197,10 @@ function vehicleManager() {
         dpTable[k][n] = {"carCombi": [], "rentfee": Infinity};
         var i = 1;
         while(i < n){
-          if(rentTable[i] + dpTable[k-1][n-i]["rentfee"] < dpTable[k][n]["rentfee"]){
+          if(rentfeeTable[i] + dpTable[k-1][n-i]["rentfee"] < dpTable[k][n]["rentfee"]){
             dpTable[k][n]["carCombi"] = dpTable[k-1][n-i]["carCombi"].slice();
             dpTable[k][n]["carCombi"].push(i);
-            dpTable[k][n]["rentfee"] = dpTable[k-1][n-i]["rentfee"] + rentTable[i];
+            dpTable[k][n]["rentfee"] = dpTable[k-1][n-i]["rentfee"] + rentfeeTable[i];
           }
           i++;
         }
