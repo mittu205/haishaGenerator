@@ -1,6 +1,7 @@
 let memberData = [];
 let locData = {};
 let groupData = {};
+let carData = [];
 let rentfeeTable = [];
 
 let totalPassenger = 0;   //乗車総人数
@@ -20,6 +21,7 @@ function _dataInput() {
     tempArray["name"] = inputSheet.getRange(i, 1).getValue();
     tempArray["location"] = inputSheet.getRange(i, 2).getValue();
     tempArray["driver"] = inputSheet.getRange(i, 3).getValue();
+    tempArray["isAssigned"] = false;
     memberData.push(tempArray);
     i++;
   }
@@ -218,6 +220,58 @@ function vehicleManager() {
         groupData[group]["rentfee"] = dpTable[k][n]["rentfee"];        
       }
       k++;
+    }
+  }
+
+  //carData生成
+  var group;
+  var point;
+  var member;
+  for(group in groupData){  //carオブジェクト生成
+    var tempArray = {};
+    var i = 0;
+    for(car of groupData[group]["carCombi"]){
+      tempArray = {"count": car, "group": group, "members": []};
+      carData.push(tempArray);
+    }
+  }
+  for(member of memberData){  //借受人割り当て
+    if(member["driver"] == 2){
+      for(car of carData){
+        if(car["members"].length == 0 && car["group"] == member["location"]){
+          car["members"].push(memberData.indexOf(member));
+          member["isAssigned"] = true;
+          break;
+        }
+      }
+    }
+  }
+  for(group in groupData){  //経由地参加者割り当て
+    for(point in groupData[group]["waypoint"]){
+      for(member of memberData){
+        if(member["location"] == point && member["isAssigned"] == false){
+          for(car of carData){
+            if(car["count"] - car["members"].length > 0 && car["group"] == group){
+              car["members"].push(memberData.indexOf(member));
+              member["isAssigned"] = true;
+              groupData[group]["waypoint"][point]--;
+              break;
+            }
+          }
+        }
+        if(groupData[group]["waypoint"][point] == 0) break;
+      }
+    }
+  }
+  for(member of memberData){  //その他参加者割り当て
+    if(member["isAssigned"] == false){
+      for(car of carData){
+        if(car["count"] - car["members"].length > 0 && car["group"] == member["location"]){
+          car["members"].push(memberData.indexOf(member));
+          member["isAssigned"] = true;
+          break;
+        }
+      }
     }
   }
 
