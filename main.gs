@@ -51,19 +51,17 @@ function _dataOutput() {
   const outputSheet = sheetFile.getSheetByName("出力");
 
   //結果出力
-  var location;
-  var i = 2;
-  for(location in groupData){
-    outputSheet.getRange(i, 1).setValue(location);
-    outputSheet.getRange(i, 2).setValue(groupData[location]["numRentee"]);
-    outputSheet.getRange(i, 3).setValue(groupData[location]["numPassenger"]);
-    outputSheet.getRange(i, 4).setValue(groupData[location]["rentfee"]);
-    outputSheet.getRange(i, 5).setValue(groupData[location]["waypoint"]);
-    i++;
+  outputSheet.clear();
+  var j = 1;
+  for(car of carData){
+    outputSheet.getRange(1, j).setValue(memberData[car["members"][0]]["location"] + "発");
+    var i = 2;
+    for(member of car["members"]){
+      outputSheet.getRange(i, j).setValue(memberData[member]["name"]);
+      i++;
+    }
+    j++;
   }
-  outputSheet.getRange(i, 1).setValue("合計");
-  outputSheet.getRange(i, 2).setValue(totalRentee);
-  outputSheet.getRange(i, 3).setValue(totalPassenger);
 }
 
 
