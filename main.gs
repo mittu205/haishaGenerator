@@ -2,6 +2,7 @@ let memberData = [];
 let locData = {};
 let groupData = {};
 let carData = [];
+let distTable = [];
 let rentfeeTable = [];
 
 let totalPassenger = 0;   //乗車総人数
@@ -28,17 +29,32 @@ function _dataInput() {
 
   //locDataに乗車地設定
   var i = 7;
+  var lat;
+  var lon;
   while(1){
     var j = 0;
     location = configSheet.getRange(i, 1).getValue();
+    lat = configSheet.getRange(i, 3).getValue();
+    lon = configSheet.getRange(i, 4).getValue();
     if(configSheet.getRange(i, 1).isBlank() == true) break;
-    locData[location] = {numPassenger: 0, numRentee: 0, closeLoc: []};
-    while(configSheet.getRange(i, j + 3).isBlank() == false){
-      locData[location]["closeLoc"][j] = configSheet.getRange(i, j + 3).getValue();
-      j++;
-    }
+    locData[location] = {"numPassenger": 0, "numRentee": 0, "closeLoc": [], "lat": lat, "lon": lon};
     i++;
   }
+
+  //乗車地間の距離計算
+  for(loc1 in locData){
+    for(loc2 in locData){
+      if(loc1 != loc2){
+        var dist = Math.pow(locData[loc1]["lat"] - locData[loc2]["lat"], 2) + Math.pow(locData[loc1]["lon"] - locData[loc2]["lon"], 2);
+        distTable.push({"loc1": loc1, "loc2": loc2, "dist": dist});
+      }
+    }
+  }
+  distTable.sort(function(a, b){
+    if(a["dist"] < b["dist"]) return -1;
+    if(a["dist"] > b["dist"]) return 1;
+    return 0;
+  });
 
   //rentfeeTableにレンタ価格設定
   rentfeeTable = configSheet.getRange(2, 2, 1, 9).getValues();
@@ -78,6 +94,10 @@ function vehicleManager() {
     if(!(location in locData)){
       var response = ui.alert("エラー", "乗車地「" + location + "」は既定の乗車地に含まれていません。他のすべての乗車地から無限遠の距離にあると仮定して処理を続行します。", ui.ButtonSet.OK_CANCEL);
       if(response === ui.Button.OK){
+        for(l in locData){
+          distTable.push({"loc1": l, "loc2": location, "dist": Infinity});
+          distTable.push({"loc1": location, "loc2": l, "dist": Infinity});
+        }
         locData[location] = {numPassenger: 0, numRentee: 0, closeLoc: []};        
       }else{
         return;
@@ -117,59 +137,29 @@ function vehicleManager() {
     }
   }
 
-  //経由便割り当て(優先)
-  var location;               //乗車地
-  var numPassenger = 0;       //残りの乗車人数
-  var i = 0;
-  while(i < 3){
+  //経由地割り当て
+  var numPassenger;
+  var locPair;
+  for(locPair of distTable){
     if(numAssigned == totalPassenger) break;
-    for(location in locData){
-      numPassenger = locData[location]["numPassenger"];
-      if(numPassenger > 0){
-        var closeLoc = locData[location]["closeLoc"][i];
-        if(closeLoc in groupData){
-          var vacant = groupData[closeLoc]["numRentee"] * 8 - groupData[closeLoc]["numPassenger"];
-          if(vacant > numPassenger){
-            groupData[closeLoc]["waypoint"][location] = numPassenger;
-            groupData[closeLoc]["numPassenger"] += numPassenger;
-            locData[location]["numPassenger"] = 0;
-            numAssigned += numPassenger;
-          }else if(vacant > 0){
-            groupData[closeLoc]["waypoint"][location] = vacant;
-            groupData[closeLoc]["numPassenger"] += vacant;
-            locData[location]["numPassenger"] -= vacant;
-            numAssigned += vacant;            
-          }
-        }
-      }
-    }
-    i++;
-  }
-
-  //経由便割り当て(最終)
-  var location;               //乗車地
-  var numPassenger = 0;       //残りの乗車人数
-  for(location in locData){
-    if(numAssigned == totalPassenger) break;
+    var location = locPair["loc1"];
     numPassenger = locData[location]["numPassenger"];
     if(numPassenger > 0){
-      var closeLoc;
-      for(closeLoc in groupData){
-        var vacant = groupData[closeLoc]["numRentee"] * 8 - groupData[closeLoc]["numPassenger"];
-        if(vacant > numPassenger){
-          groupData[closeLoc]["waypoint"][location] = numPassenger;
-          groupData[closeLoc]["numPassenger"] += numPassenger;
-          locData[location]["numPassenger"] = 0;
-          numAssigned += numPassenger;
-          break;
-        }else if(vacant > 0){
-          groupData[closeLoc]["waypoint"][location] = vacant;
-          groupData[closeLoc]["numPassenger"] += vacant;
-          locData[location]["numPassenger"] -= vacant;
-          numAssigned += vacant;
-          numPassenger -= vacant;            
-        }        
-      }
+      var closeLoc = locPair["loc2"];
+      if(groupData[closeLoc] === undefined) continue;
+      var vacant = groupData[closeLoc]["numRentee"] * 8 - groupData[closeLoc]["numPassenger"];
+      if(vacant > numPassenger){
+        groupData[closeLoc]["waypoint"][location] = numPassenger;
+        groupData[closeLoc]["numPassenger"] += numPassenger;
+        locData[location]["numPassenger"] = 0;
+        numAssigned += numPassenger;
+      }else if(vacant > 0){
+        groupData[closeLoc]["waypoint"][location] = vacant;
+        groupData[closeLoc]["numPassenger"] += vacant;
+        locData[location]["numPassenger"] -= vacant;
+        numAssigned += vacant;
+        numPassenger -= vacant;            
+      }        
     }
   }
 
