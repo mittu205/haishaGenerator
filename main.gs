@@ -1,6 +1,9 @@
 let memberData = [];
 let locData = {};
 let groupData = {};
+let carData = [];
+let distTable = [];
+let rentfeeTable = [];
 
 let totalPassenger = 0;   //乗車総人数
 let totalRentee = 0;      //借受可能総人数
@@ -19,23 +22,43 @@ function _dataInput() {
     tempArray["name"] = inputSheet.getRange(i, 1).getValue();
     tempArray["location"] = inputSheet.getRange(i, 2).getValue();
     tempArray["driver"] = inputSheet.getRange(i, 3).getValue();
+    tempArray["isAssigned"] = false;
     memberData.push(tempArray);
     i++;
   }
 
   //locDataに乗車地設定
   var i = 7;
+  var lat;
+  var lon;
   while(1){
     var j = 0;
     location = configSheet.getRange(i, 1).getValue();
+    lat = configSheet.getRange(i, 3).getValue();
+    lon = configSheet.getRange(i, 4).getValue();
     if(configSheet.getRange(i, 1).isBlank() == true) break;
-    locData[location] = {numPassenger: 0, numRentee: 0, closeLoc: []};
-    while(configSheet.getRange(i, j + 3).isBlank() == false){
-      locData[location]["closeLoc"][j] = configSheet.getRange(i, j + 3).getValue();
-      j++;
-    }
+    locData[location] = {"numPassenger": 0, "numRentee": 0, "closeLoc": [], "lat": lat, "lon": lon};
     i++;
   }
+
+  //乗車地間の距離計算
+  for(loc1 in locData){
+    for(loc2 in locData){
+      if(loc1 != loc2){
+        var dist = Math.pow(locData[loc1]["lat"] - locData[loc2]["lat"], 2) + Math.pow(locData[loc1]["lon"] - locData[loc2]["lon"], 2);
+        distTable.push({"loc1": loc1, "loc2": loc2, "dist": dist});
+      }
+    }
+  }
+  distTable.sort(function(a, b){
+    if(a["dist"] < b["dist"]) return -1;
+    if(a["dist"] > b["dist"]) return 1;
+    return 0;
+  });
+
+  //rentfeeTableにレンタ価格設定
+  rentfeeTable = configSheet.getRange(2, 2, 1, 9).getValues();
+  rentfeeTable = rentfeeTable[0];
 }
 
 
@@ -44,18 +67,17 @@ function _dataOutput() {
   const outputSheet = sheetFile.getSheetByName("出力");
 
   //結果出力
-  var location;
-  var i = 2;
-  for(location in groupData){
-    outputSheet.getRange(i, 1).setValue(location);
-    outputSheet.getRange(i, 2).setValue(groupData[location]["numRentee"]);
-    outputSheet.getRange(i, 3).setValue(groupData[location]["numPassenger"]);
-    outputSheet.getRange(i, 4).setValue(groupData[location]["waypoint"]);
-    i++;
+  outputSheet.clear();
+  var j = 1;
+  for(car of carData){
+    outputSheet.getRange(1, j).setValue(memberData[car["members"][0]]["location"] + "発");
+    var i = 2;
+    for(member of car["members"]){
+      outputSheet.getRange(i, j).setValue(memberData[member]["name"]);
+      i++;
+    }
+    j++;
   }
-  outputSheet.getRange(i, 1).setValue("合計");
-  outputSheet.getRange(i, 2).setValue(totalRentee);
-  outputSheet.getRange(i, 3).setValue(totalPassenger);
 }
 
 
@@ -72,6 +94,10 @@ function vehicleManager() {
     if(!(location in locData)){
       var response = ui.alert("エラー", "乗車地「" + location + "」は既定の乗車地に含まれていません。他のすべての乗車地から無限遠の距離にあると仮定して処理を続行します。", ui.ButtonSet.OK_CANCEL);
       if(response === ui.Button.OK){
+        for(l in locData){
+          distTable.push({"loc1": l, "loc2": location, "dist": Infinity});
+          distTable.push({"loc1": location, "loc2": l, "dist": Infinity});
+        }
         locData[location] = {numPassenger: 0, numRentee: 0, closeLoc: []};        
       }else{
         return;
@@ -111,58 +137,128 @@ function vehicleManager() {
     }
   }
 
-  //経由便割り当て(優先)
-  var location;               //乗車地
-  var numPassenger = 0;       //残りの乗車人数
-  var i = 0;
-  while(i < 3){
+  //経由地割り当て
+  var numPassenger;
+  var locPair;
+  for(locPair of distTable){
     if(numAssigned == totalPassenger) break;
-    for(location in locData){
-      numPassenger = locData[location]["numPassenger"];
-      if(numPassenger > 0){
-        var closeLoc = locData[location]["closeLoc"][i];
-        if(closeLoc in groupData){
-          var vacant = groupData[closeLoc]["numRentee"] * 8 - groupData[closeLoc]["numPassenger"];
-          if(vacant > numPassenger){
-            groupData[closeLoc]["waypoint"][location] = numPassenger;
-            groupData[closeLoc]["numPassenger"] += numPassenger;
-            locData[location]["numPassenger"] = 0;
-            numAssigned += numPassenger;
-          }else if(vacant > 0){
-            groupData[closeLoc]["waypoint"][location] = vacant;
-            groupData[closeLoc]["numPassenger"] += vacant;
-            locData[location]["numPassenger"] -= vacant;
-            numAssigned += vacant;            
+    var location = locPair["loc1"];
+    numPassenger = locData[location]["numPassenger"];
+    if(numPassenger > 0){
+      var closeLoc = locPair["loc2"];
+      if(groupData[closeLoc] === undefined) continue;
+      var vacant = groupData[closeLoc]["numRentee"] * 8 - groupData[closeLoc]["numPassenger"];
+      if(vacant > numPassenger){
+        groupData[closeLoc]["waypoint"][location] = numPassenger;
+        groupData[closeLoc]["numPassenger"] += numPassenger;
+        locData[location]["numPassenger"] = 0;
+        numAssigned += numPassenger;
+      }else if(vacant > 0){
+        groupData[closeLoc]["waypoint"][location] = vacant;
+        groupData[closeLoc]["numPassenger"] += vacant;
+        locData[location]["numPassenger"] -= vacant;
+        numAssigned += vacant;
+        numPassenger -= vacant;            
+      }        
+    }
+  }
+
+  //車両数の算出
+  var group;              //配車グループ
+  for(group in groupData){
+    var dpTable = [];
+    dpTable[0] = [];
+    dpTable[0][0] = {"carCombi": [], "rentfee": Infinity};
+    var n = 1;
+    while(n <= groupData[group]["numPassenger"]){
+      if(n > 8){
+        dpTable[0][n] = {"carCombi": [], "rentfee": Infinity};
+      }else{
+        dpTable[0][n] = {"carCombi": [n], "rentfee": rentfeeTable[n]};
+      }
+      n++;
+    }
+    var k = 1;
+    while(k < groupData[group]["numRentee"]){
+      dpTable[k] = [];
+      dpTable[k][0] = {"carCombi": [], "rentfee": Infinity};
+      var n = 1;
+      while(n <= groupData[group]["numPassenger"]){
+        dpTable[k][n] = {"carCombi": [], "rentfee": Infinity};
+        var i = 1;
+        while(i < n){
+          if(rentfeeTable[i] + dpTable[k-1][n-i]["rentfee"] < dpTable[k][n]["rentfee"]){
+            dpTable[k][n]["carCombi"] = dpTable[k-1][n-i]["carCombi"].slice();
+            dpTable[k][n]["carCombi"].push(i);
+            dpTable[k][n]["rentfee"] = dpTable[k-1][n-i]["rentfee"] + rentfeeTable[i];
           }
+          i++;
+        }
+        n++;
+      }
+      k++;
+    }
+    var n = groupData[group]["numPassenger"];
+    groupData[group]["carCombi"] = dpTable[0][n]["carCombi"].slice();
+    groupData[group]["rentfee"] = dpTable[0][n]["rentfee"];
+    var k = 1;
+    while(k < groupData[group]["numRentee"]){
+      if(dpTable[k][n]["rentfee"] < groupData[group]["rentfee"]){
+        groupData[group]["carCombi"] = dpTable[k][n]["carCombi"].slice();
+        groupData[group]["rentfee"] = dpTable[k][n]["rentfee"];        
+      }
+      k++;
+    }
+  }
+
+  //carData生成
+  var group;
+  var point;
+  var member;
+  for(group in groupData){  //carオブジェクト生成
+    var tempArray = {};
+    var i = 0;
+    for(car of groupData[group]["carCombi"]){
+      tempArray = {"count": car, "group": group, "members": []};
+      carData.push(tempArray);
+    }
+  }
+  for(member of memberData){  //借受人割り当て
+    if(member["driver"] == 2){
+      for(car of carData){
+        if(car["members"].length == 0 && car["group"] == member["location"]){
+          car["members"].push(memberData.indexOf(member));
+          member["isAssigned"] = true;
+          break;
         }
       }
     }
-    i++;
   }
-
-  //経由便割り当て(最終)
-  var location;               //乗車地
-  var numPassenger = 0;       //残りの乗車人数
-  for(location in locData){
-    if(numAssigned == totalPassenger) break;
-    numPassenger = locData[location]["numPassenger"];
-    if(numPassenger > 0){
-      var closeLoc;
-      for(closeLoc in groupData){
-        var vacant = groupData[closeLoc]["numRentee"] * 8 - groupData[closeLoc]["numPassenger"];
-        if(vacant > numPassenger){
-          groupData[closeLoc]["waypoint"][location] = numPassenger;
-          groupData[closeLoc]["numPassenger"] += numPassenger;
-          locData[location]["numPassenger"] = 0;
-          numAssigned += numPassenger;
+  for(group in groupData){  //経由地参加者割り当て
+    for(point in groupData[group]["waypoint"]){
+      for(member of memberData){
+        if(member["location"] == point && member["isAssigned"] == false){
+          for(car of carData){
+            if(car["count"] - car["members"].length > 0 && car["group"] == group){
+              car["members"].push(memberData.indexOf(member));
+              member["isAssigned"] = true;
+              groupData[group]["waypoint"][point]--;
+              break;
+            }
+          }
+        }
+        if(groupData[group]["waypoint"][point] == 0) break;
+      }
+    }
+  }
+  for(member of memberData){  //その他参加者割り当て
+    if(member["isAssigned"] == false){
+      for(car of carData){
+        if(car["count"] - car["members"].length > 0 && car["group"] == member["location"]){
+          car["members"].push(memberData.indexOf(member));
+          member["isAssigned"] = true;
           break;
-        }else if(vacant > 0){
-          groupData[closeLoc]["waypoint"][location] = vacant;
-          groupData[closeLoc]["numPassenger"] += vacant;
-          locData[location]["numPassenger"] -= vacant;
-          numAssigned += vacant;
-          numPassenger -= vacant;            
-        }        
+        }
       }
     }
   }
