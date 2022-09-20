@@ -1,7 +1,7 @@
 let memberData = [];
 let locData = {};
 let groupData = {};
-let carData = [];
+let cars = [];
 let distTable = [];
 let rentfeeTable = [];
 
@@ -69,11 +69,11 @@ function _dataOutput() {
   //結果出力
   outputSheet.clear();
   var j = 1;
-  for(car of carData){
-    outputSheet.getRange(1, j).setValue(memberData[car["members"][0]]["location"] + "発");
+  for(car of cars){
+    outputSheet.getRange(1, j).setValue(car.getOrigin() + "発");
     var i = 2;
-    for(member of car["members"]){
-      outputSheet.getRange(i, j).setValue(memberData[member]["name"]);
+    for(member of car.members){
+      outputSheet.getRange(i, j).setValue(member["name"]);
       i++;
     }
     j++;
@@ -211,23 +211,22 @@ function vehicleManager() {
     }
   }
 
-  //carData生成
+  //carインスタンス生成
   var group;
   var point;
   var member;
   for(group in groupData){  //carオブジェクト生成
-    var tempArray = {};
-    var i = 0;
     for(car of groupData[group]["carCombi"]){
-      tempArray = {"count": car, "group": group, "members": []};
-      carData.push(tempArray);
+      cars.push(new Car(car, group));
     }
   }
+
+  //carメンバー決定
   for(member of memberData){  //借受人割り当て
     if(member["driver"] == 2){
-      for(car of carData){
-        if(car["members"].length == 0 && car["group"] == member["location"]){
-          car["members"].push(memberData.indexOf(member));
+      for(car of cars){
+        if(car.hasRentee() == false && car.getOrigin() == member["location"]){
+          car.addMember(member);
           member["isAssigned"] = true;
           break;
         }
@@ -238,9 +237,9 @@ function vehicleManager() {
     for(point in groupData[group]["waypoint"]){
       for(member of memberData){
         if(member["location"] == point && member["isAssigned"] == false){
-          for(car of carData){
-            if(car["count"] - car["members"].length > 0 && car["group"] == group){
-              car["members"].push(memberData.indexOf(member));
+          for(car of cars){
+            if(car.isFull() == false && car.getOrigin() == group){
+              car.addMember(member);
               member["isAssigned"] = true;
               groupData[group]["waypoint"][point]--;
               break;
@@ -253,13 +252,13 @@ function vehicleManager() {
   }
   for(member of memberData){  //その他参加者割り当て
     if(member["isAssigned"] == false){
-      for(car of carData){
-        if(car["count"] - car["members"].length > 0 && car["group"] == member["location"]){
-          car["members"].push(memberData.indexOf(member));
+      for(car of cars){
+        if(car.isFull() == false && car.getOrigin() == member["location"]){
+          car.addMember(member);
           member["isAssigned"] = true;
           break;
         }
-      }
+      }      
     }
   }
 
