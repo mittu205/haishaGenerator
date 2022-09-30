@@ -1,4 +1,4 @@
-let memberData = [];
+let members = [];
 let locData = {};
 let groupData = {};
 let cars = [];
@@ -14,16 +14,14 @@ function _dataInput() {
   const inputSheet = sheetFile.getSheetByName("入力");
   const configSheet = sheetFile.getSheetByName("設定");
 
-  //memberDataに参加者情報を格納
+  //membersに参加者情報を格納
   var i = 2;
   while(1){
-    var tempArray = {};
     if(inputSheet.getRange(i, 1).isBlank() == true) break;
-    tempArray["name"] = inputSheet.getRange(i, 1).getValue();
-    tempArray["location"] = inputSheet.getRange(i, 2).getValue();
-    tempArray["driver"] = inputSheet.getRange(i, 3).getValue();
-    tempArray["isAssigned"] = false;
-    memberData.push(tempArray);
+    var name = inputSheet.getRange(i, 1).getValue();
+    var location = inputSheet.getRange(i, 2).getValue();
+    var driver = inputSheet.getRange(i, 3).getValue();
+    members.push(new Member(name, location, driver));
     i++;
   }
 
@@ -88,9 +86,9 @@ function vehicleManager() {
   _dataInput();
 
   //locDataに人数情報を格納
-  var location;   //乗車地
-  for(member of memberData){
-    location = member["location"];
+  var location;   //乗車地   
+  for(member of members){
+    location = member.getLocation();
     if(!(location in locData)){
       var response = ui.alert("エラー", "乗車地「" + location + "」は既定の乗車地に含まれていません。他のすべての乗車地から無限遠の距離にあると仮定して処理を続行します。", ui.ButtonSet.OK_CANCEL);
       if(response === ui.Button.OK){
@@ -222,12 +220,11 @@ function vehicleManager() {
   }
 
   //carメンバー決定
-  for(member of memberData){  //借受人割り当て
-    if(member["driver"] == 2){
+  for(member of members){  //借受人割り当て
+    if(member.isRentee() == true){
       for(car of cars){
-        if(car.hasRentee() == false && car.getOrigin() == member["location"]){
+        if(car.hasRentee() == false && car.getOrigin() == member.getLocation()){
           car.addMember(member);
-          member["isAssigned"] = true;
           break;
         }
       }
@@ -235,12 +232,11 @@ function vehicleManager() {
   }
   for(group in groupData){  //経由地参加者割り当て
     for(point in groupData[group]["waypoint"]){
-      for(member of memberData){
-        if(member["location"] == point && member["isAssigned"] == false){
+      for(member of members){
+        if(member.getLocation() == point && member.isAssigned == false){
           for(car of cars){
             if(car.isFull() == false && car.getOrigin() == group){
               car.addMember(member);
-              member["isAssigned"] = true;
               groupData[group]["waypoint"][point]--;
               break;
             }
@@ -250,12 +246,11 @@ function vehicleManager() {
       }
     }
   }
-  for(member of memberData){  //その他参加者割り当て
-    if(member["isAssigned"] == false){
+  for(member of members){  //その他参加者割り当て
+    if(member.isAssigned == false){
       for(car of cars){
-        if(car.isFull() == false && car.getOrigin() == member["location"]){
+        if(car.isFull() == false && car.getOrigin() == member.getLocation()){
           car.addMember(member);
-          member["isAssigned"] = true;
           break;
         }
       }      

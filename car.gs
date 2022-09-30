@@ -19,6 +19,7 @@ class Car {
 
   addMember(member){
     this.members.push(member);
+    member.setAssigned();
   }
 
   isFull(){
