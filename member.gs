@@ -1,13 +1,13 @@
 class Member {
-  constructor(name, location, driver){
+  constructor(name, boardPt, driver){
     this.name = name;
-    this.location = location;
+    this.boardPt = boardPt;
     this.driver = driver;
     this.isAssigned = false;
   }
 
-  getLocation(){
-    return this.location;
+  getBoardPt(){
+    return this.boardPt;
   }
 
   isRentee(){
