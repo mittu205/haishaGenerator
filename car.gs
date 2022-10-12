@@ -3,6 +3,7 @@ class Car {
     this.capacity = capacity;
     this.origin = origin;
     this.members = [];
+    this.waypoints = [];
   }
 
   hasRentee(){
@@ -18,7 +19,11 @@ class Car {
   }
 
   addMember(member){
-    this.members.push(member);
+    var point = member.getBoardPt();
+    if(point != this.origin && this.waypoints.includes(point) == false){
+      this.waypoints.push(point);
+    }
+    this.members.splice(1, 0, member);
     member.setAssigned();
   }
 
@@ -28,5 +33,15 @@ class Car {
     }else{
       return true;
     }
+  }
+
+  getName(){
+    var name = this.origin;
+    var point;
+    for(point of this.waypoints){
+      name += point;
+    }
+    name += "配車";
+    return name;
   }
 };

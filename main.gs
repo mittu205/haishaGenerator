@@ -70,7 +70,7 @@ function _dataOutput() {
   outputSheet.clear();
   var j = 1;
   for(car of cars){
-    outputSheet.getRange(1, j).setValue(car.getOrigin() + "発");
+    outputSheet.getRange(1, j).setValue(car.getName());
     var i = 2;
     for(member of car.members){
       outputSheet.getRange(i, j).setValue(member["name"]);
