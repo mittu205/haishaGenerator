@@ -1,8 +1,8 @@
 class Point {
   constructor(name, lat, lon){
     this.ptName = name;
-    this.remainMember = 0;
-    this.remainRentee = 0;
+    this.numMember = 0;
+    this.numRentee = 0;
     this.members = [];
     this.childPt = {};
     this.lat = lat;
@@ -20,69 +20,56 @@ class Point {
 
   registerMember(member){
     totalMember++;
-    this.remainMember++;
+    this.numMember++;
     this.members.push(member);
     if(member.isRentee() == true){
       totalRentee++;
-      this.remainRentee++;
+      this.numRentee++;
     }
   }
 
   addParentPtMember(){
-    if(this.remainRentee * 8 >= this.remainMember){
-      numAssigned += this.remainMember;
-      this.remainMember = 0;
-      this.remainRentee = 0;
-    }else if(this.remainRentee > 0){
-      numAssigned += this.remainRentee * 8;
-      this.remainMember -= this.remainRentee * 8;
-      this.remainRentee = 0;
+    if(this.numRentee * 8 >= this.numMember){
+      numAssigned += this.numMember;
+    }else if(this.numRentee > 0){
+      numAssigned += this.numRentee * 8;
     }
   }
 
   getRemainMember(){
-    return this.remainMember;
+    var count = this.numMember - this.numRentee * 8;
+    if(count > 0){
+      return count;
+    }else{
+      return 0;
+    }
   }
 
   getNumMember(){
-    var count = this.members.length;
-    var point;
-    for(point in this.childPt){
-      count += this.childPt[point];
-    }
-    return count;
+    return this.numMember;
   }
 
   getNumRentee(){
-    var count = 0;
-    var member;
-    for(member of this.members){
-      if(member.isRentee() == true) count++;
-    }
-    return count;
+    return this.numRentee;
   }
 
-  setChildPt(point, count){
-    if(this.childPt[point] === undefined){
-      this.childPt[point] = 0;
-    }
-    this.childPt[point] += count;
-    if(count < 0){
-      this.remainMember += count;
-    }
+  reduceNumMember(count){
+    this.numMember -= count;
   }
 
   addChildPtMember(point){
-    var vacant = this.getNumRentee() * 8 - this.getNumMember();
+    var vacant = this.numRentee * 8 - this.numMember;
     var count = points[point].getRemainMember();
     if(vacant > count){
       numAssigned += count;
       this.childPt[point] = count;
-      points[point].setChildPt(this.ptName, count * -1);
+      this.numMember += count;
+      points[point].reduceNumMember(count);
     }else if(vacant > 0){
       numAssigned += vacant;
       this.childPt[point] = vacant;
-      points[point].setChildPt(this.ptName, vacant * -1);
+      this.numMember += vacant;
+      points[point].reduceNumMember(vacant);
     }
   }
 

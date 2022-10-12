@@ -1,7 +1,5 @@
 let members = [];
 let points = {};
-let locData = {};
-let groupData = {};
 let cars = [];
 let distTable = [];
 let rentfeeTable = [];
@@ -202,17 +200,18 @@ function vehicleManager() {
   }
   for(parentPt in points){  //経由地参加者割り当て
     for(childPt in points[parentPt]["childPt"]){
+      var count = points[parentPt]["childPt"][childPt];
       for(member of members){
-        if(points[parentPt]["childPt"][childPt] <= 0) break;
         if(member.getBoardPt() == childPt && member.isAssigned == false){
           for(car of cars){
             if(car.isFull() == false && car.getOrigin() == parentPt){
               car.addMember(member);
-              points[parentPt].setChildPt(childPt, -1);
+              count--;
               break;
             }
           }
         }
+        if(count == 0) break;
       }
     }
   }
