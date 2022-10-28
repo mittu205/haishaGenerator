@@ -1,12 +1,12 @@
 class Point {
-  constructor(name, data){
+  constructor(name, lat, lon){
     this.ptName = name;
     this.numMember = 0;
     this.numRentee = 0;
     this.members = [];
     this.childPt = {};
-    this.lat = data["lat"];
-    this.lon = data["lon"];
+    this.lat = lat;
+    this.lon = lon;
     this.carCombi = [];
   }
 
