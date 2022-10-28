@@ -2,6 +2,7 @@ let members = [];
 let points = {};
 let cars = [];
 let distTable = [];
+let config = {};
 let rentfeeTable = [];
 let numAssigned = 0;    //割り当て済み人数
 
@@ -9,54 +10,24 @@ let totalMember = 0;   //乗車総人数
 let totalRentee = 0;      //借受可能総人数
 
 
-function _dataInput() {
-  const sheetFile = SpreadsheetApp.getActiveSpreadsheet();
-  const inputSheet = sheetFile.getSheetByName("入力");
-  const configSheet = sheetFile.getSheetByName("設定");
+function _getConfig() {
+  const configSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("設定");
+  let row;
 
-  //membersに参加者情報を格納
-  var i = 2;
+  //pointList読み込み
+  config["pointList"] = {};
+  row = 7;
   while(1){
-    if(inputSheet.getRange(i, 1).isBlank() == true) break;
-    var name = inputSheet.getRange(i, 1).getValue();
-    var location = inputSheet.getRange(i, 2).getValue();
-    var driver = inputSheet.getRange(i, 3).getValue();
-    members.push(new Member(name, location, driver));
-    i++;
+    let name, lat, lon;
+    if(configSheet.getRange(row, 1).isBlank() == true) break;
+    name = configSheet.getRange(row, 1).getValue();
+    lat = configSheet.getRange(row, 3).getValue();
+    lon = configSheet.getRange(row, 4).getValue();
+    config["pointList"][name] = {"lat": lat, "lon": lon};
+    row++;
   }
 
-  //pointsに乗車地設定
-  var i = 7;
-  var lat;
-  var lon;
-  while(1){
-    var j = 0;
-    location = configSheet.getRange(i, 1).getValue();
-    lat = configSheet.getRange(i, 3).getValue();
-    lon = configSheet.getRange(i, 4).getValue();
-    if(configSheet.getRange(i, 1).isBlank() == true) break;
-    points[location] = new Point(location, lat, lon);
-    i++;
-  }
-
-  //乗車地間の距離計算
-  for(pt1 in points){
-    for(pt2 in points){
-      if(pt1 != pt2){
-        var dist1 = Math.pow(points[pt1].getLat() - points[pt2].getLat(), 2);
-        var dist2 = Math.pow(points[pt1].getLon() - points[pt2].getLon(), 2);
-        var dist = dist1 + dist2;
-        distTable.push({"loc1": pt1, "loc2": pt2, "dist": dist});
-      }
-    }
-  }
-  distTable.sort(function(a, b){
-    if(a["dist"] < b["dist"]) return -1;
-    if(a["dist"] > b["dist"]) return 1;
-    return 0;
-  });
-
-  //rentfeeTableにレンタ価格設定
+  //rentfeeTable読み込み
   rentfeeTable = configSheet.getRange(2, 2, 1, 9).getValues();
   rentfeeTable = rentfeeTable[0];
 }
@@ -82,28 +53,53 @@ function _dataOutput() {
 
 
 function vehicleManager() {
+  const inputSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("入力");
   const ui = SpreadsheetApp.getUi();
 
-  _dataInput();
+  _getConfig(); //設定ファイル読み込み
 
-  //pointsに人数情報を格納
-  var point;   //乗車地   
-  for(member of members){
-    point = member.getBoardPt();
+  //入力ファイル読み込み、MemberとPoint生成
+  let row = 2;
+  while(1){
+    let name, point, driver;
+    if(inputSheet.getRange(row, 1).isBlank() == true) break;
+    name = inputSheet.getRange(row, 1).getValue();
+    point = inputSheet.getRange(row, 2).getValue();
+    driver = inputSheet.getRange(row, 3).getValue();
     if(!(point in points)){
-      var response = ui.alert("エラー", "乗車地「" + point + "」は既定の乗車地に含まれていません。他のすべての乗車地から無限遠の距離にあると仮定して処理を続行します。", ui.ButtonSet.OK_CANCEL);
-      if(response === ui.Button.OK){
-        for(pt2 in points){
-          distTable.push({"loc1": pt2, "loc2": point, "dist": Infinity});
-          distTable.push({"loc1": point, "loc2": pt2, "dist": Infinity});
-        }
-        points[point] = new Point(point, null, null);        
+      if(point in config["pointList"]){
+        points[point] = new Point(point, config["pointList"][point]);
       }else{
-        return;
+        let response = ui.alert("エラー", "乗車地「" + point + "」は既定の乗車地に含まれていません。他のすべての乗車地から無限遠の距離にあると仮定して処理を続行します。", ui.ButtonSet.OK_CANCEL);
+        if(!(response === ui.Button.OK)) return;
+        points[point] = new Point(point, {"lat": null, "lon": null}); 
       }
     }
-    points[point].registerMember(member);
+    points[point].registerMember(new Member(name, point, driver));
+    members.push(new Member(name, point, driver));
+    row++;
   }
+
+  //乗車地間の距離計算
+  for(pt1 in points){
+    for(pt2 in points){
+      if(pt1 != pt2){
+        if(points[pt1].getLat() === null || points[pt2].getLat() === null || points[pt1].getLon() === null || points[pt1].getLon() === null){
+          distTable.push({"loc1": pt1, "loc2": pt2, "dist": Infinity});
+        }else{
+          let dist1 = Math.pow(points[pt1].getLat() - points[pt2].getLat(), 2);
+          let dist2 = Math.pow(points[pt1].getLon() - points[pt2].getLon(), 2);
+          let dist = dist1 + dist2;
+          distTable.push({"loc1": pt1, "loc2": pt2, "dist": dist});
+        }
+      }
+    }
+  }
+  distTable.sort(function(a, b){
+    if(a["dist"] < b["dist"]) return -1;
+    if(a["dist"] > b["dist"]) return 1;
+    return 0;
+  });
 
   //借受可能人数下限エラー判定
   if(totalRentee * 8 < totalMember){
