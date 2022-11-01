@@ -53,23 +53,29 @@ class Point {
     return this.numRentee;
   }
 
-  reduceNumMember(count){
-    this.numMember -= count;
+  moveMember(){
+    let member;
+    for(member of this.members){
+      if(!(member.isRentee())){
+        this.numMember--;
+        let i = this.members.indexOf(member);
+        this.members.splice(i, 1);
+        return member;
+      }
+    }
   }
 
   addChildPtMember(point){
-    var vacant = this.numRentee * 8 - this.numMember;
-    var count = points[point].getRemainMember();
-    if(vacant > count){
-      numAssigned += count;
-      this.childPt[point] = count;
-      this.numMember += count;
-      points[point].reduceNumMember(count);
-    }else if(vacant > 0){
-      numAssigned += vacant;
-      this.childPt[point] = vacant;
-      this.numMember += vacant;
-      points[point].reduceNumMember(vacant);
+    let vacant = this.numRentee * 8 - this.numMember;
+    if(vacant <= 0) return;
+    let count = points[point].getRemainMember();
+    this.childPt[point] = 0;
+    while(vacant > 0 && count > 0){
+      numAssigned++;
+      this.childPt[point]++;
+      this.registerMember(points[point].moveMember());
+      vacant--;
+      count--;
     }
   }
 
