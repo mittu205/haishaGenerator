@@ -7,7 +7,7 @@ class Point {
     this.childPt = {};
     this.lat = lat;
     this.lon = lon;
-    this.carCombi = [];
+    this.cars = [];
   }
 
   getLat(){
@@ -79,7 +79,12 @@ class Point {
     }
   }
 
-  setCarCombi(combi){
-    this.carCombi = combi.slice();
+  setCars(combi){
+    let capacity;
+    for(capacity of combi){
+      let car = new Car(capacity, this.ptName);
+      this.cars.push(car);
+      cars.push(car);
+    }
   }
 };

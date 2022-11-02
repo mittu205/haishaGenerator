@@ -123,7 +123,7 @@ function vehicleManager() {
     }
   }
 
-  //車両数の算出
+  //車両の決定、pointにcarを登録
   var point;              //配車グループ
   for(point in points){
     if(points[point].getNumRentee() == 0) continue;
@@ -170,16 +170,7 @@ function vehicleManager() {
       }
       k++;
     }
-    points[point].setCarCombi(carCombi);
-  }
-
-  //carインスタンス生成
-  var point;
-  var member;
-  for(point in points){  //carオブジェクト生成
-    for(car of points[point]["carCombi"]){
-      cars.push(new Car(car, point));
-    }
+    points[point].setCars(carCombi);
   }
 
   //carメンバー決定
