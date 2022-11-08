@@ -84,7 +84,45 @@ class Point {
     for(capacity of combi){
       let car = new Car(capacity, this.ptName);
       this.cars.push(car);
-      cars.push(car);
+    }
+  }
+
+  assignMembers(){
+    let car, member, point;
+    for(member of this.members){  //借受人割り当て
+      if(member.isRentee() == true){
+        for(car of this.cars){
+          if(car.hasRentee() == false){
+            car.addMember(member);
+            break;
+          }
+        }
+      }
+    }
+    for(point in this.childPt){ //経由地参加者割り当て
+      let count = this.childPt[point];
+      for(member of this.members){
+        if(member.getBoardPt() == point && member.isAssigned == false){
+          for(car of this.cars){
+            if(car.isFull() == false){
+              car.addMember(member);
+              count--;
+              break;
+            }
+          }
+        }
+        if(count == 0) break;
+      }
+    }
+    for(member of this.members){  //その他参加者割り当て
+      if(member.isAssigned == false){
+        for(car of this.cars){
+          if(car.isFull() == false){
+            car.addMember(member);
+            break;
+          }
+        }      
+      }
     }
   }
 };

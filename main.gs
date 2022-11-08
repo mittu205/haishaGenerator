@@ -49,28 +49,10 @@ function _getConfig() {
 }
 
 
-function _dataOutput() {
-  const sheetFile = SpreadsheetApp.getActiveSpreadsheet();
-  const outputSheet = sheetFile.getSheetByName("出力");
-
-  //結果出力
-  outputSheet.clear();
-  var j = 1;
-  for(car of cars){
-    outputSheet.getRange(1, j).setValue(car.getName());
-    var i = 2;
-    for(member of car.members){
-      outputSheet.getRange(i, j).setValue(member["name"]);
-      i++;
-    }
-    j++;
-  }
-}
-
-
 function vehicleManager() {
   const ui = SpreadsheetApp.getUi();
   const inputSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("入力");
+  const outputSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("出力");
 
   _getConfig(); //設定読み込み
 
@@ -96,7 +78,6 @@ function vehicleManager() {
       }
     }
     points[point].registerMember(member);
-    members.push(member);
     row++;
   }
 
@@ -174,43 +155,23 @@ function vehicleManager() {
   }
 
   //carメンバー決定
-  for(member of members){  //借受人割り当て
-    if(member.isRentee() == true){
-      for(car of cars){
-        if(car.hasRentee() == false && car.getOrigin() == member.getBoardPt()){
-          car.addMember(member);
-          break;
-        }
-      }
-    }
-  }
-  for(parentPt in points){  //経由地参加者割り当て
-    for(childPt in points[parentPt]["childPt"]){
-      var count = points[parentPt]["childPt"][childPt];
-      for(member of members){
-        if(member.getBoardPt() == childPt && member.isAssigned == false){
-          for(car of cars){
-            if(car.isFull() == false && car.getOrigin() == parentPt){
-              car.addMember(member);
-              count--;
-              break;
-            }
-          }
-        }
-        if(count == 0) break;
-      }
-    }
-  }
-  for(member of members){  //その他参加者割り当て
-    if(member.isAssigned == false){
-      for(car of cars){
-        if(car.isFull() == false && car.getOrigin() == member.getBoardPt()){
-          car.addMember(member);
-          break;
-        }
-      }      
-    }
+  for(point in points){
+    points[point].assignMembers();
   }
 
-  _dataOutput();
+  //結果出力
+  outputSheet.clear();
+  var col = 1;
+  var point;
+  for(point in points){
+    for(car of points[point].cars){
+      outputSheet.getRange(1, col).setValue(car.getName());
+      let row = 2;
+      for(member of car.members){
+        outputSheet.getRange(row, col).setValue(member["name"]);
+        row++;
+      }
+      col++;
+    }
+  }
 }
