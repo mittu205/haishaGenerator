@@ -9,7 +9,7 @@ let totalMember = 0;   //乗車総人数
 let totalRentee = 0;      //借受可能総人数
 
 
-function _getConfig() {
+function getConfig_() {
   const configSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("設定");
 
   //pointsに乗車地設定
@@ -54,7 +54,7 @@ function vehicleManager() {
   const inputSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("入力");
   const outputSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("出力");
 
-  _getConfig(); //設定読み込み
+  getConfig_(); //設定読み込み
 
   //入力読み込み、pointにmemberを登録
   var row = 2;
