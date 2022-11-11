@@ -1,10 +1,7 @@
 class Point {
   constructor(name, lat, lon){
     this.ptName = name;
-    this.numMember = 0;
-    this.numRentee = 0;
     this.members = [];
-    this.childPt = {};
     this.lat = lat;
     this.lon = lon;
     this.cars = [];
@@ -20,24 +17,22 @@ class Point {
 
   registerMember(member){
     totalMember++;
-    this.numMember++;
     this.members.push(member);
     if(member.isRentee() == true){
       totalRentee++;
-      this.numRentee++;
     }
   }
 
   addParentPtMember(){
-    if(this.numRentee * 8 >= this.numMember){
-      numAssigned += this.numMember;
-    }else if(this.numRentee > 0){
-      numAssigned += this.numRentee * 8;
+    if(this.getNumRentee() * 8 >= this.getNumMember()){
+      numAssigned += this.getNumMember();
+    }else if(this.getNumRentee() > 0){
+      numAssigned += this.getNumRentee() * 8;
     }
   }
 
   getRemainMember(){
-    var count = this.numMember - this.numRentee * 8;
+    let count = this.getNumMember() - this.getNumRentee() * 8;
     if(count > 0){
       return count;
     }else{
@@ -46,18 +41,24 @@ class Point {
   }
 
   getNumMember(){
-    return this.numMember;
+    return this.members.length;
   }
 
   getNumRentee(){
-    return this.numRentee;
+    let member;
+    let count = 0;
+    for(member of this.members){
+      if(member.isRentee()){
+        count++;
+      }
+    }
+    return count;
   }
 
   moveMember(){
     let member;
     for(member of this.members){
       if(!(member.isRentee())){
-        this.numMember--;
         let i = this.members.indexOf(member);
         this.members.splice(i, 1);
         return member;
@@ -66,13 +67,10 @@ class Point {
   }
 
   addChildPtMember(point){
-    let vacant = this.numRentee * 8 - this.numMember;
-    if(vacant <= 0) return;
+    let vacant = this.getNumRentee() * 8 - this.getNumMember();
     let count = points[point].getRemainMember();
-    this.childPt[point] = 0;
     while(vacant > 0 && count > 0){
       numAssigned++;
-      this.childPt[point]++;
       this.registerMember(points[point].moveMember());
       vacant--;
       count--;
@@ -87,9 +85,28 @@ class Point {
     }
   }
 
+  getChildPts(){
+    let member;
+    let childPts = [];
+    for(member of this.members){
+      let boardPt = member.getBoardPt();
+      if(boardPt == this.ptName) continue;
+      let childPt = childPts.find(function(point){
+        return point["name"] == boardPt;
+      });
+      if(childPt === undefined){
+        childPt = {"name": boardPt, "count": 0};
+        childPts.push(childPt);
+      }
+      childPt["count"]++;
+    }
+    return childPts;
+  }
+
   assignMembers(){
+    //借受人割り当て
     let car, member, point;
-    for(member of this.members){  //借受人割り当て
+    for(member of this.members){
       if(member.isRentee() == true){
         for(car of this.cars){
           if(car.hasRentee() == false){
@@ -99,22 +116,28 @@ class Point {
         }
       }
     }
-    for(point in this.childPt){ //経由地参加者割り当て
-      let count = this.childPt[point];
-      for(member of this.members){
-        if(member.getBoardPt() == point && member.isAssigned == false){
-          for(car of this.cars){
-            if(car.isFull() == false){
-              car.addMember(member);
-              count--;
-              break;
+
+    //経由地参加者割り当て
+    let childPts = this.getChildPts();
+    for(point of childPts){
+      let count = point["count"];
+      while(count > 0){
+        for(member of this.members){
+          if(member.getBoardPt() == point["name"] && member.isAssigned == false){
+            for(car of this.cars){
+              if(car.isFull() == false){
+                car.addMember(member);
+                count--;
+                break;
+              }
             }
           }
         }
-        if(count == 0) break;
       }
     }
-    for(member of this.members){  //その他参加者割り当て
+
+    //その他参加者割り当て
+    for(member of this.members){
       if(member.isAssigned == false){
         for(car of this.cars){
           if(car.isFull() == false){
