@@ -35,6 +35,10 @@ class Car {
     }
   }
 
+  getNumVacant(){
+    return this.capacity - this.members.length;
+  }
+
   getName(){
     var name = this.origin;
     var point;

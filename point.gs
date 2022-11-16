@@ -100,6 +100,11 @@ class Point {
       }
       childPt["count"]++;
     }
+    childPts.sort(function(a, b){
+      if(a["count"] < b["count"]) return 1;
+      if(a["count"] > b["count"]) return -1;
+      return 0;
+    });
     return childPts;
   }
 
@@ -121,6 +126,17 @@ class Point {
     let childPts = this.getChildPts();
     for(point of childPts){
       let count = point["count"];
+      for(car of this.cars){
+        if(car.getNumVacant() >= count){
+          for(member of this.members){
+            if(member.getBoardPt() == point["name"]){
+              car.addMember(member);
+              count--;
+            }
+          }
+          break;
+        }
+      }
       while(count > 0){
         for(member of this.members){
           if(member.getBoardPt() == point["name"] && member.isAssigned == false){
