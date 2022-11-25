@@ -9,21 +9,8 @@ let totalMember = 0;   //乗車総人数
 let totalRentee = 0;      //借受可能総人数
 
 
-function _dataInput() {
-  const sheetFile = SpreadsheetApp.getActiveSpreadsheet();
-  const inputSheet = sheetFile.getSheetByName("入力");
-  const configSheet = sheetFile.getSheetByName("設定");
-
-  //membersに参加者情報を格納
-  var i = 2;
-  while(1){
-    if(inputSheet.getRange(i, 1).isBlank() == true) break;
-    var name = inputSheet.getRange(i, 1).getValue();
-    var location = inputSheet.getRange(i, 2).getValue();
-    var driver = inputSheet.getRange(i, 3).getValue();
-    members.push(new Member(name, location, driver));
-    i++;
-  }
+function getConfig_() {
+  const configSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("設定");
 
   //pointsに乗車地設定
   var i = 7;
@@ -62,36 +49,24 @@ function _dataInput() {
 }
 
 
-function _dataOutput() {
-  const sheetFile = SpreadsheetApp.getActiveSpreadsheet();
-  const outputSheet = sheetFile.getSheetByName("出力");
-
-  //結果出力
-  outputSheet.clear();
-  var j = 1;
-  for(car of cars){
-    outputSheet.getRange(1, j).setValue(car.getName());
-    var i = 2;
-    for(member of car.members){
-      outputSheet.getRange(i, j).setValue(member["name"]);
-      i++;
-    }
-    j++;
-  }
-}
-
-
 function vehicleManager() {
   const ui = SpreadsheetApp.getUi();
+  const inputSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("入力");
+  const outputSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("出力");
 
-  _dataInput();
+  getConfig_(); //設定読み込み
 
-  //pointsに人数情報を格納
-  var point;   //乗車地   
-  for(member of members){
-    point = member.getBoardPt();
+  //入力読み込み、pointにmemberを登録
+  var row = 2;
+  while(1){
+    if(inputSheet.getRange(row, 1).isBlank() == true) break;
+    let name = inputSheet.getRange(row, 1).getValue();
+    let point = inputSheet.getRange(row, 2).getValue();
+    let driver = inputSheet.getRange(row, 3).getValue();
+    let member = new Member(name, point, driver);
+
     if(!(point in points)){
-      var response = ui.alert("エラー", "乗車地「" + point + "」は既定の乗車地に含まれていません。他のすべての乗車地から無限遠の距離にあると仮定して処理を続行します。", ui.ButtonSet.OK_CANCEL);
+      let response = ui.alert("エラー", "乗車地「" + point + "」は既定の乗車地に含まれていません。他のすべての乗車地から無限遠の距離にあると仮定して処理を続行します。", ui.ButtonSet.OK_CANCEL);
       if(response === ui.Button.OK){
         for(pt2 in points){
           distTable.push({"loc1": pt2, "loc2": point, "dist": Infinity});
@@ -103,6 +78,7 @@ function vehicleManager() {
       }
     }
     points[point].registerMember(member);
+    row++;
   }
 
   //借受可能人数下限エラー判定
@@ -128,7 +104,7 @@ function vehicleManager() {
     }
   }
 
-  //車両数の算出
+  //車両の決定、pointにcarを登録
   var point;              //配車グループ
   for(point in points){
     if(points[point].getNumRentee() == 0) continue;
@@ -175,56 +151,27 @@ function vehicleManager() {
       }
       k++;
     }
-    points[point].setCarCombi(carCombi);
-  }
-
-  //carインスタンス生成
-  var point;
-  var member;
-  for(point in points){  //carオブジェクト生成
-    for(car of points[point]["carCombi"]){
-      cars.push(new Car(car, point));
-    }
+    points[point].setCars(carCombi);
   }
 
   //carメンバー決定
-  for(member of members){  //借受人割り当て
-    if(member.isRentee() == true){
-      for(car of cars){
-        if(car.hasRentee() == false && car.getOrigin() == member.getBoardPt()){
-          car.addMember(member);
-          break;
-        }
-      }
-    }
-  }
-  for(parentPt in points){  //経由地参加者割り当て
-    for(childPt in points[parentPt]["childPt"]){
-      var count = points[parentPt]["childPt"][childPt];
-      for(member of members){
-        if(member.getBoardPt() == childPt && member.isAssigned == false){
-          for(car of cars){
-            if(car.isFull() == false && car.getOrigin() == parentPt){
-              car.addMember(member);
-              count--;
-              break;
-            }
-          }
-        }
-        if(count == 0) break;
-      }
-    }
-  }
-  for(member of members){  //その他参加者割り当て
-    if(member.isAssigned == false){
-      for(car of cars){
-        if(car.isFull() == false && car.getOrigin() == member.getBoardPt()){
-          car.addMember(member);
-          break;
-        }
-      }      
-    }
+  for(point in points){
+    points[point].assignMembers();
   }
 
-  _dataOutput();
+  //結果出力
+  outputSheet.clear();
+  var col = 1;
+  var point;
+  for(point in points){
+    for(car of points[point].cars){
+      outputSheet.getRange(1, col).setValue(car.getName());
+      let row = 2;
+      for(member of car.members){
+        outputSheet.getRange(row, col).setValue(member["name"]);
+        row++;
+      }
+      col++;
+    }
+  }
 }

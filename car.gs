@@ -14,16 +14,13 @@ class Car {
     }
   }
 
-  getOrigin(){
-    return this.origin;
-  }
-
   addMember(member){
-    var point = member.getBoardPt();
-    if(point != this.origin && this.waypoints.includes(point) == false){
-      this.waypoints.push(point);
+    let point = member.getBoardPt();
+    if(point != this.origin){
+      this.members.push(member);
+    }else{
+      this.members.splice(1, 0, member);
     }
-    this.members.splice(1, 0, member);
     member.setAssigned();
   }
 
@@ -35,11 +32,20 @@ class Car {
     }
   }
 
+  getNumVacant(){
+    return this.capacity - this.members.length;
+  }
+
   getName(){
-    var name = this.origin;
-    var point;
-    for(point of this.waypoints){
-      name += point;
+    let member;
+    let name = "";
+    let waypoints = [];
+    for(member of this.members){
+      let point = member.getBoardPt();
+      if(waypoints.includes(point) == false){
+        waypoints.push(point);
+        name += point;
+      }
     }
     name += "配車";
     return name;
