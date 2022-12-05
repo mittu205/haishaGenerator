@@ -105,11 +105,7 @@ function vehicleManager() {
   }
 
   //車両の決定、メンバー割り当て
-  var point;              //配車グループ
-  for(point in points){
-    let carOptimizer = new CarOptimizer(rentfeeTable);
-    let carCombi = carOptimizer.run(points[point].getNumMember(), points[point].getNumRentee());
-    points[point].setCars(carCombi);
+  for(const point in points){
     points[point].assignMembers();
   }
 

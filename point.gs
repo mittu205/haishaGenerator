@@ -109,6 +109,11 @@ class Point {
   }
 
   assignMembers(){
+    if(this.getNumMember() == 0) return;
+    let carOptimizer = new CarOptimizer(rentfeeTable);
+    let carCombi = carOptimizer.getCarCombi(this.getNumMember(), this.getNumRentee());
+    this.setCars(carCombi);
+
     //借受人割り当て
     let car, member, point;
     for(member of this.members){
