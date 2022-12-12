@@ -5,6 +5,7 @@ class Point {
     this.lat = lat;
     this.lon = lon;
     this.cars = [];
+    this.carOptimizer = carOptimizers[0];
   }
 
   getLat(){
@@ -110,8 +111,7 @@ class Point {
 
   assignMembers(){
     if(this.getNumMember() == 0) return;
-    let carOptimizer = new CarOptimizer(rentfeeTable);
-    let carCombi = carOptimizer.getCarCombi(this.getNumMember(), this.getNumRentee());
+    let carCombi = this.carOptimizer.getCarCombi(this.getNumMember(), this.getNumRentee());
     this.setCars(carCombi);
 
     //借受人割り当て

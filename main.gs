@@ -1,8 +1,6 @@
-let members = [];
 let points = {};
-let cars = [];
 let distTable = [];
-let rentfeeTable = [];
+let carOptimizers = [];
 let numAssigned = 0;    //割り当て済み人数
 
 let totalMember = 0;   //乗車総人数
@@ -11,6 +9,10 @@ let totalRentee = 0;      //借受可能総人数
 
 function getConfig_() {
   const configSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("設定");
+
+  //rentfeeTableにレンタ価格設定
+  let rentfeeTable = configSheet.getRange(2, 2, 1, 9).getValues();
+  carOptimizers[0] = new CarOptimizer(rentfeeTable[0]);
 
   //pointsに乗車地設定
   var i = 7;
@@ -42,10 +44,6 @@ function getConfig_() {
     if(a["dist"] > b["dist"]) return 1;
     return 0;
   });
-
-  //rentfeeTableにレンタ価格設定
-  rentfeeTable = configSheet.getRange(2, 2, 1, 9).getValues();
-  rentfeeTable = rentfeeTable[0];
 }
 
 
