@@ -41,9 +41,10 @@ class CarOptimizer {
     }
     let carCombi, rentfee;
     for(let k = 0; k < numRentee; k++){
-      if(k == 0 || this.dpTable[k][numMember]["rentfee"] < rentfee){
+      let fixedCost = this.rentfeeTable[0] * (k + 1);
+      if(k == 0 || this.dpTable[k][numMember]["rentfee"] + fixedCost < rentfee){
         carCombi = this.dpTable[k][numMember]["carCombi"].slice();
-        rentfee = this.dpTable[k][numMember]["rentfee"];        
+        rentfee = this.dpTable[k][numMember]["rentfee"];
       }
     }
     this.maxMember = numMember;
