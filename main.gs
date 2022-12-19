@@ -122,4 +122,5 @@ function vehicleManager() {
       col++;
     }
   }
+  SpreadsheetApp.setActiveSheet(outputSheet);
 }
