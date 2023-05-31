@@ -6,7 +6,7 @@ Google スプレッドシート上で参加者名簿を読み込み、配車を�
 本ツールで出力される配車は、1台あたりのドライバーの数が十分でなかったり、配車間の人数が極めてアンバランスとなる場合があります。**本ツール、およびその出力結果を利用したことによる損害について、制作者は一切の責任を負いません。**
 
 ## 導入方法
-1. こちらの[配布用Googleスプレッドシート](https://docs.google.com/spreadsheets/d/18TIbtVNPIkdtwQ17APZQzUzQv3Q9RlmxUZT4j2Fvys0/edit?usp=sharing)にPCでアクセスします。
+1. こちらの[配布用Googleスプレッドシート](https://docs.google.com/spreadsheets/d/1TbNJjnGqGuulFje2fg3btBmh8m3yP7DGcy-P1rZG4_I/edit?usp=sharing)にPCでアクセスします。
 2. ツールバーから「ファイル」→「コピーを作成」で、ご自身のGoogleアカウント上にスプレッドシートをコピーします。その際、Apps Scriptのコードも自動でコピーされます。
 3. 導入完了です。
 

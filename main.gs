@@ -1,8 +1,6 @@
-let members = [];
 let points = {};
-let cars = [];
 let distTable = [];
-let rentfeeTable = [];
+let carOptimizers = [];
 let numAssigned = 0;    //割り当て済み人数
 
 let totalMember = 0;   //乗車総人数
@@ -11,6 +9,10 @@ let totalRentee = 0;      //借受可能総人数
 
 function getConfig_() {
   const configSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("設定");
+
+  //rentfeeTableにレンタ価格設定
+  let rentfeeTable = configSheet.getRange(2, 2, 1, 9).getValues();
+  carOptimizers[0] = new CarOptimizer(rentfeeTable[0]);
 
   //pointsに乗車地設定
   var i = 7;
@@ -42,10 +44,6 @@ function getConfig_() {
     if(a["dist"] > b["dist"]) return 1;
     return 0;
   });
-
-  //rentfeeTableにレンタ価格設定
-  rentfeeTable = configSheet.getRange(2, 2, 1, 9).getValues();
-  rentfeeTable = rentfeeTable[0];
 }
 
 
@@ -104,58 +102,8 @@ function vehicleManager() {
     }
   }
 
-  //車両の決定、pointにcarを登録
-  var point;              //配車グループ
-  for(point in points){
-    if(points[point].getNumRentee() == 0) continue;
-    var dpTable = [];
-    dpTable[0] = [];
-    dpTable[0][0] = {"carCombi": [], "rentfee": Infinity};
-    var n = 1;
-    while(n <= points[point].getNumMember()){
-      if(n > 8){
-        dpTable[0][n] = {"carCombi": [], "rentfee": Infinity};
-      }else{
-        dpTable[0][n] = {"carCombi": [n], "rentfee": rentfeeTable[n]};
-      }
-      n++;
-    }
-    var k = 1;
-    while(k < points[point].getNumRentee()){
-      dpTable[k] = [];
-      dpTable[k][0] = {"carCombi": [], "rentfee": Infinity};
-      var n = 1;
-      while(n <= points[point].getNumMember()){
-        dpTable[k][n] = {"carCombi": [], "rentfee": Infinity};
-        var i = 1;
-        while(i < n){
-          if(rentfeeTable[i] + dpTable[k-1][n-i]["rentfee"] < dpTable[k][n]["rentfee"]){
-            dpTable[k][n]["carCombi"] = dpTable[k-1][n-i]["carCombi"].slice();
-            dpTable[k][n]["carCombi"].push(i);
-            dpTable[k][n]["rentfee"] = dpTable[k-1][n-i]["rentfee"] + rentfeeTable[i];
-          }
-          i++;
-        }
-        n++;
-      }
-      k++;
-    }
-    var n = points[point].getNumMember();
-    var carCombi = dpTable[0][n]["carCombi"].slice();
-    var rentfee = dpTable[0][n]["rentfee"];
-    var k = 1;
-    while(k < points[point].getNumRentee()){
-      if(dpTable[k][n]["rentfee"] < rentfee){
-        carCombi = dpTable[k][n]["carCombi"].slice();
-        rentfee = dpTable[k][n]["rentfee"];        
-      }
-      k++;
-    }
-    points[point].setCars(carCombi);
-  }
-
-  //carメンバー決定
-  for(point in points){
+  //車両の決定、メンバー割り当て
+  for(const point in points){
     points[point].assignMembers();
   }
 
@@ -174,4 +122,5 @@ function vehicleManager() {
       col++;
     }
   }
+  SpreadsheetApp.setActiveSheet(outputSheet);
 }

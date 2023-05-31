@@ -5,6 +5,7 @@ class Point {
     this.lat = lat;
     this.lon = lon;
     this.cars = [];
+    this.carOptimizer = carOptimizers[0];
   }
 
   getLat(){
@@ -109,6 +110,10 @@ class Point {
   }
 
   assignMembers(){
+    if(this.getNumMember() == 0) return;
+    let carCombi = this.carOptimizer.getCarCombi(this.getNumMember(), this.getNumRentee());
+    this.setCars(carCombi);
+
     //借受人割り当て
     let car, member, point;
     for(member of this.members){
