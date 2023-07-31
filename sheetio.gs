@@ -41,6 +41,8 @@ function readConfig_() {
   }else{
     return -1;
   }
+
+  return json;
 }
 
 
