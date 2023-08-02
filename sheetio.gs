@@ -1,19 +1,20 @@
+const offset = 11;
+
 function readConfig_() {
   const configSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("設定");
   let json = {};
-  const offset = 11;
+
+  //バージョン情報読み取り
+  if(configSheet.getRange(1, offset + 1).getValue() == "シートver"){
+    json["fileVersion"] = configSheet.getRange(1, offset + 2).getValue();
+  }else{
+    return -1;
+  }
 
   //ヘッダ列読み取り
   const hedder = configSheet.getRange(1, offset + 1, configSheet.getLastRow(), 1).getValues();
   for(const row in hedder){
     hedder[row] = hedder[row][0];
-  }
-
-  //バージョン情報読み取り
-  if(hedder.indexOf("シートver") != -1){
-    json["fileVersion"] = configSheet.getRange(hedder.indexOf("シートver") + 1, offset + 2).getValue();
-  }else{
-    return -1;
   }
 
   //車両リスト読み取り
@@ -46,6 +47,27 @@ function readConfig_() {
 }
 
 
+function readInput_() {
+  const configSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("設定");
+  const inputSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("入力");
+  let json = {};
+
+  //バージョン情報読み取り
+  json["fileVersion"] = configSheet.getRange(1, offset + 2).getValue();
+
+  //参加者リスト読み取り
+  json["members"] = [];
+  const firstRow = inputSheet.getRange(1, 1);
+  const rowCount = firstRow.getNextDataCell(SpreadsheetApp.Direction.DOWN).getRow();
+  const data = inputSheet.getRange(2, 1, rowCount, 3).getValues();
+  for(const row of data){
+    json["members"].push({"name": row[0], "firstPt": row[1], "driver": row[2]});
+  }
+
+  return json;
+}
+
+
 function runGenerator() {
   const ui = SpreadsheetApp.getUi();
 
@@ -55,6 +77,8 @@ function runGenerator() {
     ui.alert("エラー", "設定シートの形式に誤りがあります。", ui.ButtonSet.OK);
     return -1;
   }
+
+  const inputData = readInput_();
 
   vehicleManager();
 }
