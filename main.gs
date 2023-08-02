@@ -64,16 +64,8 @@ function vehicleManager() {
     let member = new Member(name, point, driver);
 
     if(!(point in points)){
-      let response = ui.alert("エラー", "乗車地「" + point + "」は既定の乗車地に含まれていません。他のすべての乗車地から無限遠の距離にあると仮定して処理を続行します。", ui.ButtonSet.OK_CANCEL);
-      if(response === ui.Button.OK){
-        for(pt2 in points){
-          distTable.push({"loc1": pt2, "loc2": point, "dist": Infinity});
-          distTable.push({"loc1": point, "loc2": pt2, "dist": Infinity});
-        }
-        points[point] = new Point(point, null, null);        
-      }else{
-        return;
-      }
+      ui.alert("エラー", "乗車地「" + point + "」は既定の乗車地に含まれていません。", ui.ButtonSet.OK);
+      return;
     }
     points[point].registerMember(member);
     row++;
