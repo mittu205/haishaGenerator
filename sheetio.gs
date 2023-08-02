@@ -43,6 +43,12 @@ function readConfig_() {
     return -1;
   }
 
+  if(hedder.indexOf("車両毎の固定費") != -1){
+    json["fixedCost"] = configSheet.getRange(hedder.indexOf("車両毎の固定費") + 1, offset + 2).getValue();
+  }else{
+    return -1;
+  }
+
   return json;
 }
 
