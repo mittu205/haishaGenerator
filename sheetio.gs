@@ -24,7 +24,7 @@ function readConfig_() {
     const rowCount = firstRow.getNextDataCell(SpreadsheetApp.Direction.DOWN).getRow() - firstRow.getRow();
     const data = configSheet.getRange(firstRow.getRow() + 1, offset + 2, rowCount, 3).getValues();
     for(const row of data){
-      json["cars"].push({"name": row[0], "capacity": row[1], "price": row[2]});
+      json["cars"].push({"name": row[0], "capacity": row[1], "cost": row[2]});
     }
   }else{
     return -1;
@@ -86,5 +86,5 @@ function runGenerator() {
 
   const inputData = readInput_();
 
-  vehicleManager();
+  vehicleManager(configData);
 }
