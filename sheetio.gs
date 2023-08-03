@@ -1,18 +1,16 @@
-const offset = 11;
-
 function readConfig_() {
   const configSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("設定");
   let json = {};
 
   //バージョン情報読み取り
-  if(configSheet.getRange(1, offset + 1).getValue() == "シートver"){
-    json["fileVersion"] = configSheet.getRange(1, offset + 2).getValue();
+  if(configSheet.getRange(1, 1).getValue() == "シートver"){
+    json["fileVersion"] = configSheet.getRange(1, 2).getValue();
   }else{
     return -1;
   }
 
   //ヘッダ列読み取り
-  const hedder = configSheet.getRange(1, offset + 1, configSheet.getLastRow(), 1).getValues();
+  const hedder = configSheet.getRange(1, 1, configSheet.getLastRow(), 1).getValues();
   for(const row in hedder){
     hedder[row] = hedder[row][0];
   }
@@ -20,9 +18,9 @@ function readConfig_() {
   //車両リスト読み取り
   if(hedder.indexOf("車両リスト") != -1){
     json["cars"] = [];
-    const firstRow = configSheet.getRange(hedder.indexOf("車両リスト") + 1, offset + 2);
+    const firstRow = configSheet.getRange(hedder.indexOf("車両リスト") + 1, 2);
     const rowCount = firstRow.getNextDataCell(SpreadsheetApp.Direction.DOWN).getRow() - firstRow.getRow();
-    const data = configSheet.getRange(firstRow.getRow() + 1, offset + 2, rowCount, 3).getValues();
+    const data = configSheet.getRange(firstRow.getRow() + 1, 2, rowCount, 3).getValues();
     for(const row of data){
       json["cars"].push({"name": row[0], "capacity": row[1], "cost": row[2]});
     }
@@ -33,9 +31,9 @@ function readConfig_() {
   //乗車地リスト読み取り
   if(hedder.indexOf("乗車地リスト") != -1){
     json["points"] = [];
-    const firstRow = configSheet.getRange(hedder.indexOf("乗車地リスト") + 1, offset + 2);
+    const firstRow = configSheet.getRange(hedder.indexOf("乗車地リスト") + 1, 2);
     const rowCount = firstRow.getNextDataCell(SpreadsheetApp.Direction.DOWN).getRow() - firstRow.getRow();
-    const data = configSheet.getRange(firstRow.getRow() + 1, offset + 2, rowCount, 3).getValues();
+    const data = configSheet.getRange(firstRow.getRow() + 1, 2, rowCount, 3).getValues();
     for(const row of data){
       json["points"].push({"name": row[0], "lat": row[1], "lon": row[2]});
     }
@@ -44,7 +42,7 @@ function readConfig_() {
   }
 
   if(hedder.indexOf("車両毎の固定費") != -1){
-    json["fixedCost"] = configSheet.getRange(hedder.indexOf("車両毎の固定費") + 1, offset + 2).getValue();
+    json["fixedCost"] = configSheet.getRange(hedder.indexOf("車両毎の固定費") + 1, 2).getValue();
   }else{
     return -1;
   }
@@ -59,7 +57,7 @@ function readInput_() {
   let json = {};
 
   //バージョン情報読み取り
-  json["fileVersion"] = configSheet.getRange(1, offset + 2).getValue();
+  json["fileVersion"] = configSheet.getRange(1, 2).getValue();
 
   //参加者リスト読み取り
   json["members"] = [];

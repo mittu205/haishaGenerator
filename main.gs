@@ -29,7 +29,7 @@ function vehicleManager(configData) {
   carOptimizers[0] = new CarOptimizer(rentfeeTable);
 
   //pointsに乗車地設定
-  for(point of configData["points"]){
+  for(const point of configData["points"]){
     points[point["name"]] = new Point(point["name"], point["lat"], point["lon"]);
   }
 
