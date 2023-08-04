@@ -62,7 +62,7 @@ function readInput_() {
   //参加者リスト読み取り
   json["members"] = [];
   const firstRow = inputSheet.getRange(1, 1);
-  const rowCount = firstRow.getNextDataCell(SpreadsheetApp.Direction.DOWN).getRow();
+  const rowCount = firstRow.getNextDataCell(SpreadsheetApp.Direction.DOWN).getRow() - 1;
   const data = inputSheet.getRange(2, 1, rowCount, 3).getValues();
   for(const row of data){
     json["members"].push({"name": row[0], "firstPt": row[1], "driver": row[2]});
