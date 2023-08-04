@@ -7,9 +7,8 @@ let totalMember = 0;   //乗車総人数
 let totalRentee = 0;      //借受可能総人数
 
 
-function vehicleManager(configData) {
+function vehicleManager(configData, inputData) {
   const ui = SpreadsheetApp.getUi();
-  const inputSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("入力");
   const outputSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("出力");
 
   //rentfeeTableにレンタ価格設定
@@ -50,21 +49,14 @@ function vehicleManager(configData) {
     return 0;
   });
 
-  //入力読み込み、pointにmemberを登録
-  var row = 2;
-  while(1){
-    if(inputSheet.getRange(row, 1).isBlank() == true) break;
-    let name = inputSheet.getRange(row, 1).getValue();
-    let point = inputSheet.getRange(row, 2).getValue();
-    let driver = inputSheet.getRange(row, 3).getValue();
-    let member = new Member(name, point, driver);
-
+  //member読み込み、pointにmemberを登録
+  for(const member of inputData["members"]){
+    const point = member["firstPt"];
     if(!(point in points)){
       ui.alert("エラー", "乗車地「" + point + "」は既定の乗車地に含まれていません。", ui.ButtonSet.OK);
       return;
     }
-    points[point].registerMember(member);
-    row++;
+    points[point].registerMember(new Member(member["name"], member["firstPt"], member["driver"]));
   }
 
   //借受可能人数下限エラー判定

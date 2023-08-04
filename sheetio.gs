@@ -84,5 +84,5 @@ function runGenerator() {
 
   const inputData = readInput_();
 
-  vehicleManager(configData);
+  vehicleManager(configData, inputData);
 }
