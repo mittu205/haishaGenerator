@@ -87,6 +87,19 @@ function vehicleManager(configData, inputData) {
     points[point].assignMembers();
   }
 
+  //JSON書き出し
+  let json = {"fileVersion": "v2.0", "status": "SUCCESS", "cars": []};
+  for(const point in points){
+    for(const car of points[point].cars){
+      const name = car.getName();
+      let members = [];
+      for(const member of car.members){
+        members.push({"name": member["name"]});
+      }
+      json["cars"].push({"name": name, "members": members})
+    }
+  }
+
   //結果出力
   outputSheet.clear();
   var col = 1;
@@ -103,4 +116,6 @@ function vehicleManager(configData, inputData) {
     }
   }
   SpreadsheetApp.setActiveSheet(outputSheet);
+
+  return json;
 }
