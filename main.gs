@@ -9,7 +9,6 @@ let totalRentee = 0;      //借受可能総人数
 
 function vehicleManager(configData, inputData) {
   const ui = SpreadsheetApp.getUi();
-  const outputSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("出力");
 
   //rentfeeTableにレンタ価格設定
   let rentfeeTable = [];
@@ -99,23 +98,6 @@ function vehicleManager(configData, inputData) {
       json["cars"].push({"name": name, "members": members})
     }
   }
-
-  //結果出力
-  outputSheet.clear();
-  var col = 1;
-  var point;
-  for(point in points){
-    for(car of points[point].cars){
-      outputSheet.getRange(1, col).setValue(car.getName());
-      let row = 2;
-      for(member of car.members){
-        outputSheet.getRange(row, col).setValue(member["name"]);
-        row++;
-      }
-      col++;
-    }
-  }
-  SpreadsheetApp.setActiveSheet(outputSheet);
 
   return json;
 }

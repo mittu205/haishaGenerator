@@ -72,6 +72,24 @@ function readInput_() {
 }
 
 
+function writeOutput_(json) {
+  const outputSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("出力");
+  
+  outputSheet.clear();
+  let col = 1;
+  for(const car of json["cars"]){
+    outputSheet.getRange(1, col).setValue(car["name"]);
+    let row = 2;
+    for(member of car["members"]){
+      outputSheet.getRange(row, col).setValue(member["name"]);
+      row++;
+    }
+    col++;
+  }
+  SpreadsheetApp.setActiveSheet(outputSheet);    
+}
+
+
 function runGenerator() {
   const ui = SpreadsheetApp.getUi();
 
@@ -84,5 +102,7 @@ function runGenerator() {
 
   const inputData = readInput_();
 
-  vehicleManager(configData, inputData);
+  const outputData = vehicleManager(configData, inputData);
+
+  writeOutput_(outputData);
 }
