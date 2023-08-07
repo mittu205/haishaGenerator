@@ -6,9 +6,6 @@
   "runtimeVersion": "V8",
   "sheets": {
     "macros": [{
-      "menuName": "vehicleManager",
-      "functionName": "vehicleManager"
-    }, {
       "menuName": "runGenerator",
       "functionName": "runGenerator"
     }]

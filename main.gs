@@ -8,8 +8,6 @@ let totalRentee = 0;      //借受可能総人数
 
 
 function vehicleManager(configData, inputData) {
-  const ui = SpreadsheetApp.getUi();
-
   //rentfeeTableにレンタ価格設定
   let rentfeeTable = [];
   rentfeeTable[0] = configData["fixedCost"];
@@ -52,16 +50,14 @@ function vehicleManager(configData, inputData) {
   for(const member of inputData["members"]){
     const point = member["firstPt"];
     if(!(point in points)){
-      ui.alert("エラー", "乗車地「" + point + "」は既定の乗車地に含まれていません。", ui.ButtonSet.OK);
-      return;
+      return {"fileVersion": "v2.0", "status": "UNDEFINED_BOARDPT"};
     }
     points[point].registerMember(new Member(member["name"], member["firstPt"], member["driver"]));
   }
 
   //借受可能人数下限エラー判定
   if(totalRentee * 8 < totalMember){
-    ui.alert("エラー","借受人が不足しています。",ui.ButtonSet.OK);
-    return;
+    return {"fileVersion": "v2.0", "status": "DRIVER_SHORTAGE"};
   }
 
   //直行便割り当て

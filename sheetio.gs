@@ -100,9 +100,22 @@ function runGenerator() {
     return -1;
   }
 
+  //入力シート読み込み
   const inputData = readInput_();
 
+  //演算実行
   const outputData = vehicleManager(configData, inputData);
 
-  writeOutput_(outputData);
+  //出力シート書き出し、エラーメッセージ出力
+  switch(outputData["status"]){
+    case "SUCCESS":
+      writeOutput_(outputData);
+      return 0;
+    case "UNDEFINED_BOARDPT":
+      ui.alert("エラー", "入力シートに未定義の乗車地が含まれています。", ui.ButtonSet.OK);
+      return -1;
+    case "DRIVER_SHORTAGE":
+      ui.alert("エラー", "借受人が不足しています。", ui.ButtonSet.OK);
+      return -1;
+  }
 }
