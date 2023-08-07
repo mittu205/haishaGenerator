@@ -8,6 +8,8 @@ let totalRentee = 0;      //借受可能総人数
 
 
 function vehicleManager(configData, inputData) {
+  const version = "v2.0-alpha.1"
+
   //rentfeeTableにレンタ価格設定
   let rentfeeTable = [];
   rentfeeTable[0] = configData["fixedCost"];
@@ -50,14 +52,14 @@ function vehicleManager(configData, inputData) {
   for(const member of inputData["members"]){
     const point = member["firstPt"];
     if(!(point in points)){
-      return {"fileVersion": "v2.0", "status": "UNDEFINED_BOARDPT"};
+      return {"fileVersion": version, "status": "UNDEFINED_BOARDPT"};
     }
     points[point].registerMember(new Member(member["name"], member["firstPt"], member["driver"]));
   }
 
   //借受可能人数下限エラー判定
   if(totalRentee * 8 < totalMember){
-    return {"fileVersion": "v2.0", "status": "DRIVER_SHORTAGE"};
+    return {"fileVersion": version, "status": "DRIVER_SHORTAGE"};
   }
 
   //直行便割り当て
@@ -83,7 +85,7 @@ function vehicleManager(configData, inputData) {
   }
 
   //JSON書き出し
-  let json = {"fileVersion": "v2.0", "status": "SUCCESS", "cars": []};
+  let json = {"fileVersion": version, "status": "SUCCESS", "cars": []};
   for(const point in points){
     for(const car of points[point].cars){
       const name = car.getName();
