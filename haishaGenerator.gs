@@ -8,6 +8,7 @@ let totalRentee = 0;      //借受可能総人数
 
 
 function vehicleManager(configData, inputData) {
+  let cars = [];
   const version = "v2.0-alpha.1"
 
   //rentfeeTableにレンタ価格設定
@@ -81,21 +82,23 @@ function vehicleManager(configData, inputData) {
 
   //車両の決定、メンバー割り当て
   for(const point in points){
-    points[point].assignMembers();
+    if(points[point].getNumMember() > 0){
+      cars = cars.concat(points[point].assignMembers());
+    }
   }
 
   //JSON書き出し
   let json = {"fileVersion": version, "status": "SUCCESS", "cars": []};
-  for(const point in points){
-    for(const car of points[point].cars){
-      const name = car.getName();
-      let members = [];
-      for(const member of car.members){
-        members.push({"name": member["name"]});
-      }
-      json["cars"].push({"name": name, "members": members})
+  //for(const point in points){
+  for(const car of cars){
+    const name = car.getName();
+    let members = [];
+    for(const member of car.members){
+      members.push({"name": member["name"]});
     }
+    json["cars"].push({"name": name, "members": members})
   }
+  //}
 
   return json;
 }

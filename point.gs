@@ -168,5 +168,7 @@ class Point {
         }      
       }
     }
+
+    return this.cars;
   }
 };
