@@ -89,16 +89,14 @@ function vehicleManager(configData, inputData) {
 
   //JSON書き出し
   let json = {"fileVersion": version, "status": "SUCCESS", "cars": []};
-  //for(const point in points){
   for(const car of cars){
     const name = car.getName();
     let members = [];
-    for(const member of car.members){
+    for(const member of car.getMembers()){
       members.push({"name": member["name"]});
     }
     json["cars"].push({"name": name, "members": members})
   }
-  //}
 
   return json;
 }

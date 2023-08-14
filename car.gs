@@ -2,12 +2,21 @@ class Car {
   constructor(capacity, origin){
     this.capacity = capacity;
     this.origin = origin;
-    this.members = [];
-    this.waypoints = [];
+    this.members = {};
+  }
+
+  getMembers(){
+    let members = [];
+    for(const point in this.members){
+      if(this.members[point].length > 0){
+        members = members.concat(this.members[point]);
+      }
+    }
+    return members;
   }
 
   hasRentee(){
-    if(this.members.length == 0){
+    if(this.getMembers().length == 0){
       return false;
     }else{
       return true;
@@ -15,17 +24,17 @@ class Car {
   }
 
   addMember(member){
-    let point = member.getBoardPt();
-    if(point != this.origin){
-      this.members.push(member);
+    const point = member.getBoardPt();
+    if(point in this.members){
+      this.members[point].push(member);
     }else{
-      this.members.splice(1, 0, member);
+      this.members[point] = [member];
     }
     member.setAssigned();
   }
 
   isFull(){
-    if(this.members.length < this.capacity){
+    if(this.getMembers().length < this.capacity){
       return false;
     }else{
       return true;
@@ -33,19 +42,13 @@ class Car {
   }
 
   getNumVacant(){
-    return this.capacity - this.members.length;
+    return this.capacity - this.getMembers().length;
   }
 
   getName(){
-    let member;
     let name = "";
-    let waypoints = [];
-    for(member of this.members){
-      let point = member.getBoardPt();
-      if(waypoints.includes(point) == false){
-        waypoints.push(point);
-        name += point;
-      }
+    for(const point in this.members){
+      name += point;
     }
     name += "配車";
     return name;
