@@ -87,6 +87,56 @@ function vehicleManager(configData, inputData) {
     }
   }
 
+  //局所探索法により結果を導出
+  while(true){
+    let neighbor = {"old": [], "new": [], "score": 0};
+    for(let x = 0; x < cars.length; x++){
+      for(let y = 0; y < cars.length; y++){
+        if(x == y) continue;
+        const crrscore = cars[x].evaluate() + cars[y].evaluate();
+
+        //xの各経由地をyに移動して近傍生成
+        for(const point of cars[x].getWaypoints()){
+          let newX = cars[x].clone();
+          let newY = cars[y].clone();
+          const members = newX.deleteMembersByPoint(point);
+          if(newY.getNumMember() + members.length > 8) continue;
+          for(const member of members){
+            newY.addMember(member);
+          }
+          const newscore = newX.evaluate() + newY.evaluate();
+          if(newscore - crrscore > neighbor["score"]){
+            neighbor["old"] = [x, y];
+            neighbor["new"] = [newX, newY];
+          }
+        }
+
+        //xをyに統合して近傍生成
+        if(cars[y].getNumMember() + cars[x].getNumMember() <= 8){
+          let newY = cars[y].clone();
+          newY.merge(cars[x]);
+          const newscore = newY.evaluate();
+          if(newscore - crrscore > neighbor["score"]){
+            neighbor["old"] = [x, y];
+            neighbor["new"] = [newY];
+          }
+        }
+      }
+    }
+
+    //解が改善したなら解を更新、そうでなければ終了
+    if(neighbor["score"] > 0){
+      for(const index of neighbor["old"]){
+        cars.splice(index, 1);
+      }
+      for(const car of neighbor["new"]){
+        cars.push(car);
+      }
+    }else{
+      break;
+    }
+  }
+
   //JSON書き出し
   let json = {"fileVersion": version, "status": "SUCCESS", "cars": []};
   for(const car of cars){

@@ -33,12 +33,47 @@ class Car {
     member.setAssigned();
   }
 
+  clone(){
+    let car = new Car(this.capacity, this.origin);
+    for(const member of this.getMembers()){
+      car.addMember(member);
+    }
+    return car;
+  }
+
+  deleteMembersByPoint(point){
+    const members = this.members[point];
+    delete this.members[point];
+    return members;
+  }
+
+  getWaypoints(){
+    let waypoints = [];
+    for(const point in this.members){
+      if(point != this.origin){
+        waypoints.push(point);
+      }
+    }
+    return waypoints;
+  }
+
+  merge(car){
+    const members = car.getMembers();
+    for(const member of members){
+      this.addMember(member);
+    }
+  }
+
   isFull(){
     if(this.getMembers().length < this.capacity){
       return false;
     }else{
       return true;
     }
+  }
+
+  getNumMember(){
+    return this.getMembers().length;
   }
 
   getNumVacant(){
@@ -52,5 +87,9 @@ class Car {
     }
     name += "配車";
     return name;
+  }
+
+  evaluate(){
+    return 0;
   }
 };
