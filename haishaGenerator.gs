@@ -105,10 +105,10 @@ function vehicleManager(configData, inputData) {
             newY.addMember(member);
           }
           const newscore = newX.evaluate() + newY.evaluate();
-          if(newscore - crrscore > neighbor["score"]){
+          if(crrscore - newscore > neighbor["score"]){
             neighbor["old"] = [x, y];
             neighbor["new"] = [newX, newY];
-            neighbor["score"] = newscore - crrscore;
+            neighbor["score"] = crrscore - newscore;
           }
         }
 
@@ -117,10 +117,10 @@ function vehicleManager(configData, inputData) {
           let newY = cars[y].clone();
           newY.merge(cars[x]);
           const newscore = newY.evaluate();
-          if(newscore - crrscore > neighbor["score"]){
+          if(crrscore - newscore > neighbor["score"]){
             neighbor["old"] = [x, y];
             neighbor["new"] = [newY];
-            neighbor["score"] = newscore - crrscore;
+            neighbor["score"] = crrscore - newscore;
           }
         }
       }
