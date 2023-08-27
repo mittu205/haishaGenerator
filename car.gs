@@ -90,6 +90,9 @@ class Car {
   }
 
   evaluate(){
-    return 0;
+    const waypointScore = this.getWaypoints().length * 1000;
+    const expenceScore = 0;
+    const totalScore = waypointScore + expenceScore;
+    return totalScore;
   }
 };
