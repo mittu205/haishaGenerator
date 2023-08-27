@@ -108,6 +108,7 @@ function vehicleManager(configData, inputData) {
           if(newscore - crrscore > neighbor["score"]){
             neighbor["old"] = [x, y];
             neighbor["new"] = [newX, newY];
+            neighbor["score"] = newscore - crrscore;
           }
         }
 
@@ -119,6 +120,7 @@ function vehicleManager(configData, inputData) {
           if(newscore - crrscore > neighbor["score"]){
             neighbor["old"] = [x, y];
             neighbor["new"] = [newY];
+            neighbor["score"] = newscore - crrscore;
           }
         }
       }
@@ -127,7 +129,14 @@ function vehicleManager(configData, inputData) {
     //解が改善したなら解を更新、そうでなければ終了
     if(neighbor["score"] > 0){
       for(const index of neighbor["old"]){
-        cars.splice(index, 1);
+        //cars.splice(index, 1);
+        delete cars[index];
+      }
+      for (let i = 0; i < cars.length; i++){
+        if (cars[i] === undefined){
+          cars.splice(i, 1);  // 削除
+          if (i > 0) i--;
+        }
       }
       for(const car of neighbor["new"]){
         cars.push(car);
