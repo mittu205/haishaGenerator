@@ -1,6 +1,7 @@
 class Car {
-  constructor(capacity, origin){
-    this.capacity = capacity;
+  constructor(carType, origin){
+    this.carType = carType;
+    this.capacity = carType["capacity"];
     this.origin = origin;
     this.members = [];
     this.waypoints = [];
@@ -47,7 +48,7 @@ class Car {
         name += point;
       }
     }
-    name += "配車";
+    name += "配車[" + this.carType["name"] + "]";
     return name;
   }
 };
