@@ -11,20 +11,7 @@ function vehicleManager(configData, inputData) {
   const version = "v2.0-alpha.1"
 
   //rentfeeTableにレンタ価格設定
-  let rentfeeTable = [];
-  rentfeeTable[0] = configData["fixedCost"];
-  for(const car of configData["cars"]){
-    rentfeeTable[car["capacity"]] = car["cost"];
-  }
-  let rentfee = Infinity;
-  for(let i = 8; i > 0; i--){
-    if(rentfeeTable[i] != undefined){
-      rentfee = rentfeeTable[i];
-    }else{
-      rentfeeTable[i] = rentfee;
-    }
-  }
-  carOptimizers[0] = new CarOptimizer(rentfeeTable);
+  carOptimizers[0] = new CarOptimizer(configData["cars"], configData["fixedCost"]);
 
   //pointsに乗車地設定
   for(const point of configData["points"]){

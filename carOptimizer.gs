@@ -1,9 +1,23 @@
 class CarOptimizer {
-  constructor(table){
-    this.rentfeeTable = table;
+  constructor(cars, fixedCost){
+    this.rentfeeTable = [];
+    this.fixedCost = fixedCost;
     this.maxMember = 0;
     this.maxRentee = 0;
     this.dpTable = [];
+
+    //rentfeeTableの初期化
+    for(const car of cars){
+      this.rentfeeTable[car["capacity"]] = car["cost"];
+    }
+    let rentfee = Infinity;
+    for(let i = 8; i > 0; i--){
+      if(this.rentfeeTable[i] != undefined){
+        rentfee = this.rentfeeTable[i];
+      }else{
+        this.rentfeeTable[i] = rentfee;
+      }
+    }
   }
 
   fillTableCell(k, n){
@@ -41,8 +55,8 @@ class CarOptimizer {
     }
     let carCombi, rentfee;
     for(let k = 0; k < numRentee; k++){
-      let fixedCost = this.rentfeeTable[0] * (k + 1);
-      if(k == 0 || this.dpTable[k][numMember]["rentfee"] + fixedCost < rentfee){
+      let totalFixedCost = this.fixedCost * (k + 1);
+      if(k == 0 || this.dpTable[k][numMember]["rentfee"] + totalFixedCost < rentfee){
         carCombi = this.dpTable[k][numMember]["carCombi"].slice();
         rentfee = this.dpTable[k][numMember]["rentfee"];
       }
