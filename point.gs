@@ -79,10 +79,8 @@ class Point {
   }
 
   setCars(combi){
-    let capacity;
-    for(capacity of combi){
-      let car = new Car(capacity, this.ptName);
-      this.cars.push(car);
+    for(const carType of combi){
+      this.cars.push(new Car(carType, this.ptName));
     }
   }
 

@@ -1,6 +1,7 @@
 class Car {
-  constructor(capacity, origin){
-    this.capacity = capacity;
+  constructor(carType, origin){
+    this.carType = carType;
+    this.capacity = carType["capacity"];
     this.origin = origin;
     this.members = {};
   }
@@ -85,7 +86,7 @@ class Car {
     for(const point in this.members){
       name += point;
     }
-    name += "配車";
+    name += "配車[" + this.carType["name"] + "]";
     return name;
   }
 
