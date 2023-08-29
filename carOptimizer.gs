@@ -31,6 +31,7 @@ class CarOptimizer {
     }else{
       this.dpTable[k][n] = {"carCombi": [], "rentfee": Infinity};
       for(let i = 1; i < n; i++){
+        if(i > 8) break;
         if(this.rentfeeTable[i]["cost"] + this.dpTable[k-1][n-i]["rentfee"] < this.dpTable[k][n]["rentfee"]){
           this.dpTable[k][n]["carCombi"] = this.dpTable[k-1][n-i]["carCombi"].slice();
           this.dpTable[k][n]["carCombi"].push(this.rentfeeTable[i]);
@@ -62,5 +63,9 @@ class CarOptimizer {
     this.maxMember = numMember;
     this.maxRentee = numRentee;
     return carCombi;
+  }
+
+  getCarType(numMember){
+    return this.rentfeeTable[numMember];
   }
 }

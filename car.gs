@@ -35,7 +35,7 @@ class Car {
   }
 
   clone(){
-    let car = new Car(this.capacity, this.origin);
+    let car = new Car(this.carType, this.origin);
     for(const member of this.getMembers()){
       car.addMember(member);
     }
@@ -56,6 +56,10 @@ class Car {
       }
     }
     return waypoints;
+  }
+
+  updateCarType(){
+    this.carType = points[this.origin].getCarType(this.getNumMember());
   }
 
   merge(car){
@@ -92,7 +96,7 @@ class Car {
 
   evaluate(){
     const waypointScore = this.getWaypoints().length * 1000;
-    const expenceScore = 0;
+    const expenceScore = this.carType["cost"];
     const totalScore = waypointScore + expenceScore;
     return totalScore;
   }

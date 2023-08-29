@@ -91,6 +91,8 @@ function vehicleManager(configData, inputData) {
           for(const member of members){
             newY.addMember(member);
           }
+          newX.updateCarType();
+          newY.updateCarType();
           const newscore = newX.evaluate() + newY.evaluate();
           if(crrscore - newscore > neighbor["score"]){
             neighbor["old"] = [x, y];
@@ -103,6 +105,7 @@ function vehicleManager(configData, inputData) {
         if(cars[y].getNumMember() + cars[x].getNumMember() <= 8){
           let newY = cars[y].clone();
           newY.merge(cars[x]);
+          newY.updateCarType();
           const newscore = newY.evaluate();
           if(crrscore - newscore > neighbor["score"]){
             neighbor["old"] = [x, y];

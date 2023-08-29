@@ -84,6 +84,10 @@ class Point {
     }
   }
 
+  getCarType(numMember){
+    return this.carOptimizer.getCarType(numMember);
+  }
+
   getChildPts(){
     let member;
     let childPts = [];
