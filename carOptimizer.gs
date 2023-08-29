@@ -8,15 +8,13 @@ class CarOptimizer {
 
     //rentfeeTableの初期化
     for(const car of cars){
-      this.rentfeeTable[car["capacity"]] = car["cost"];
-    }
-    let rentfee = Infinity;
-    for(let i = 8; i > 0; i--){
-      if(this.rentfeeTable[i] != undefined){
-        rentfee = this.rentfeeTable[i];
-      }else{
-        this.rentfeeTable[i] = rentfee;
-      }
+      for(let i = car["capacity"]; i > 0; i--){
+        if(this.rentfeeTable[i] == undefined || this.rentfeeTable[i]["cost"] > car["cost"]){
+          this.rentfeeTable[i] = car;
+        }else{
+          break;
+        }
+      }      
     }
   }
 
@@ -28,15 +26,15 @@ class CarOptimizer {
       if(n > 8){
         this.dpTable[0][n] = {"carCombi": [], "rentfee": Infinity};
       }else{
-        this.dpTable[0][n] = {"carCombi": [n], "rentfee": this.rentfeeTable[n]};
+        this.dpTable[0][n] = {"carCombi": [this.rentfeeTable[n]], "rentfee": this.rentfeeTable[n]["cost"]};
       }      
     }else{
       this.dpTable[k][n] = {"carCombi": [], "rentfee": Infinity};
       for(let i = 1; i < n; i++){
-        if(this.rentfeeTable[i] + this.dpTable[k-1][n-i]["rentfee"] < this.dpTable[k][n]["rentfee"]){
+        if(this.rentfeeTable[i]["cost"] + this.dpTable[k-1][n-i]["rentfee"] < this.dpTable[k][n]["rentfee"]){
           this.dpTable[k][n]["carCombi"] = this.dpTable[k-1][n-i]["carCombi"].slice();
-          this.dpTable[k][n]["carCombi"].push(i);
-          this.dpTable[k][n]["rentfee"] = this.dpTable[k-1][n-i]["rentfee"] + this.rentfeeTable[i];
+          this.dpTable[k][n]["carCombi"].push(this.rentfeeTable[i]);
+          this.dpTable[k][n]["rentfee"] = this.dpTable[k-1][n-i]["rentfee"] + this.rentfeeTable[i]["cost"];
         }
       }
     }
