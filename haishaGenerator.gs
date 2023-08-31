@@ -1,5 +1,4 @@
 let points = {};
-let distTable = [];
 let carOptimizers = [];
 let numAssigned = 0;    //割り当て済み人数
 
@@ -8,6 +7,7 @@ let totalRentee = 0;      //借受可能総人数
 
 
 function vehicleManager(configData, inputData) {
+  let distanceTable = [];
   let cars = [];
   const version = "v2.0-alpha.1"
 
@@ -19,20 +19,13 @@ function vehicleManager(configData, inputData) {
     points[point["name"]] = new Point(point["name"], point["lat"], point["lon"]);
   }
 
-  //乗車地間の距離計算
-  for(pt1 in points){
-    for(pt2 in points){
-      if(pt1 != pt2){
-        var dist1 = Math.pow(points[pt1].getLat() - points[pt2].getLat(), 2);
-        var dist2 = Math.pow(points[pt1].getLon() - points[pt2].getLon(), 2);
-        var dist = dist1 + dist2;
-        distTable.push({"loc1": pt1, "loc2": pt2, "dist": dist});
-      }
-    }
+  //乗車地間の距離表作成
+  for(const point in points){
+    distanceTable = distanceTable.concat(points[point].initDistanceTable());
   }
-  distTable.sort(function(a, b){
-    if(a["dist"] < b["dist"]) return -1;
-    if(a["dist"] > b["dist"]) return 1;
+  distanceTable.sort(function(a, b){
+    if(a["distance"] < b["distance"]) return -1;
+    if(a["distance"] > b["distance"]) return 1;
     return 0;
   });
 
@@ -57,11 +50,10 @@ function vehicleManager(configData, inputData) {
   }
 
   //経由地割り当て
-  var locPair;
-  for(locPair of distTable){
+  for(const locPair of distanceTable){
     if(numAssigned == totalMember) break;
-    var childPt = locPair["loc1"];
-    var parentPt = locPair["loc2"];
+    const parentPt = locPair["start"];
+    const childPt = locPair["goal"];
     if(points[childPt].getRemainMember() > 0){
       points[parentPt].addChildPtMember(childPt);
     }
