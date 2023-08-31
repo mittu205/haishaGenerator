@@ -117,7 +117,7 @@ function vehicleManager(configData, inputData) {
       for (let i = 0; i < cars.length; i++){
         if (cars[i] === undefined){
           cars.splice(i, 1);  // 削除
-          if (i > 0) i--;
+          i--;
         }
       }
       for(const car of neighbor["new"]){
