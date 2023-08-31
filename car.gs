@@ -95,9 +95,32 @@ class Car {
   }
 
   evaluate(){
+    const costPerDistance = (16 + 20) * 2;
+
+    //経路を確定
+    let waypoints = this.getWaypoints().slice();
+    let crrPoint = this.origin;
+    let totalDistance = 0;
+    while(waypoints.length > 0){
+      let crrDistance = Infinity;
+      let crrWaypoint;
+      for(const point of waypoints){
+        const newDistance = points[crrPoint].getDistance(point);
+        if(newDistance < crrDistance){
+          crrDistance = newDistance;
+          crrWaypoint = point;
+        }
+        totalDistance += crrDistance;
+        waypoints.splice(waypoints.indexOf(crrWaypoint), 1);
+        crrPoint = crrWaypoint;
+      }
+    }
+
+    //評価値を導出
+    const durationScore = totalDistance * this.getNumMember() * 500 / 40;
     const waypointScore = this.getWaypoints().length * 1000;
-    const expenceScore = this.carType["cost"];
-    const totalScore = waypointScore + expenceScore;
+    const expenceScore = this.carType["cost"] + totalDistance * costPerDistance;
+    const totalScore = durationScore + waypointScore + expenceScore;
     return totalScore;
   }
 };

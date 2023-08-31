@@ -40,6 +40,13 @@ class Point {
     return this.distanceTable;
   }
 
+  getDistance(point){
+    for(const pointPair of this.distanceTable){
+      if(pointPair["goal"] != point) continue;
+      return pointPair["distance"];
+    }
+  }
+
   registerMember(member){
     totalMember++;
     this.members.push(member);
