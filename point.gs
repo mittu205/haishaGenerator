@@ -6,6 +6,7 @@ class Point {
     this.lon = lon;
     this.cars = [];
     this.carOptimizer = carOptimizers[0];
+    this.distanceTable = [];
   }
 
   getLat(){
@@ -14,6 +15,36 @@ class Point {
 
   getLon(){
     return this.lon;
+  }
+
+  initDistanceTable(){
+    const R = Math.PI / 180;
+    const convertRatio = 1.3035
+    for(const point in points){
+      if(point == this.ptName) continue;
+      const lat1 = this.lat * R;
+      const lon1 = this.lon * R;
+      const lat2 = points[point].getLat() * R;
+      const lon2 = points[point].getLon() * R;
+      const distance = 6371 * Math.acos(Math.cos(lat1) * Math.cos(lat2) * Math.cos(lon2 - lon1) + Math.sin(lat1) * Math.sin(lat2));
+      this.distanceTable.push({"start": this.ptName, "goal": point, "distance": distance * convertRatio});
+    }
+
+    //近い順に並べ替え
+    this.distanceTable.sort(function(a, b){
+      if(a["dist"] < b["dist"]) return -1;
+      if(a["dist"] > b["dist"]) return 1;
+      return 0;
+    });
+
+    return this.distanceTable;
+  }
+
+  getDistance(point){
+    for(const pointPair of this.distanceTable){
+      if(pointPair["goal"] != point) continue;
+      return pointPair["distance"];
+    }
   }
 
   registerMember(member){
@@ -82,6 +113,10 @@ class Point {
     for(const carType of combi){
       this.cars.push(new Car(carType, this.ptName));
     }
+  }
+
+  getCarType(numMember){
+    return this.carOptimizer.getCarType(numMember);
   }
 
   getChildPts(){
@@ -166,5 +201,7 @@ class Point {
         }      
       }
     }
+
+    return this.cars;
   }
 };
