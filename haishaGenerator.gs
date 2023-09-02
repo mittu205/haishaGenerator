@@ -1,5 +1,6 @@
 let points = {};
 let carOptimizers = [];
+let destination;
 let numAssigned = 0;    //割り当て済み人数
 
 let totalMember = 0;   //乗車総人数
@@ -9,7 +10,7 @@ let totalRentee = 0;      //借受可能総人数
 function vehicleManager(configData, inputData) {
   let distanceTable = [];
   let cars = [];
-  const version = "v2.0-alpha.1"
+  const version = "v2.0-alpha.2"
 
   //rentfeeTableにレンタ価格設定
   carOptimizers[0] = new CarOptimizer(configData["cars"], configData["fixedCost"]);
@@ -17,6 +18,13 @@ function vehicleManager(configData, inputData) {
   //pointsに乗車地設定
   for(const point of configData["points"]){
     points[point["name"]] = new Point(point["name"], point["lat"], point["lon"]);
+  }
+
+  //目的地設定
+  if(configData["destination"] in points){
+    destination = configData["destination"];
+  }else{
+    return {"fileVersion": version, "status": "UNDEFINED_DESTINATION"};
   }
 
   //乗車地間の距離表作成

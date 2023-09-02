@@ -115,6 +115,7 @@ class Car {
         crrPoint = crrWaypoint;
       }
     }
+    totalDistance += points[crrPoint].getDistance(destination);
 
     //評価値を導出
     const durationScore = totalDistance * this.getNumMember() * 500 / 40;
