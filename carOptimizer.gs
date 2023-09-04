@@ -8,6 +8,7 @@ class CarOptimizer {
 
     //rentfeeTableの初期化
     for(const car of cars){
+      car["cost"] = car["rentCost"];
       for(let i = car["capacity"]; i > 0; i--){
         if(this.rentfeeTable[i] == undefined || this.rentfeeTable[i]["cost"] > car["cost"]){
           this.rentfeeTable[i] = car;

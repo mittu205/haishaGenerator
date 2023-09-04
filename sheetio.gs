@@ -20,9 +20,9 @@ function readConfig_() {
     json["cars"] = [];
     const firstRow = configSheet.getRange(hedder.indexOf("車両リスト") + 1, 2);
     const rowCount = firstRow.getNextDataCell(SpreadsheetApp.Direction.DOWN).getRow() - firstRow.getRow();
-    const data = configSheet.getRange(firstRow.getRow() + 1, 2, rowCount, 3).getValues();
+    const data = configSheet.getRange(firstRow.getRow() + 1, 2, rowCount, 4).getValues();
     for(const row of data){
-      json["cars"].push({"name": row[0], "capacity": row[1], "cost": row[2]});
+      json["cars"].push({"name": row[0], "capacity": row[1], "rentCost": row[2], "fuelCost": row[3]});
     }
   }else{
     return -1;
@@ -33,9 +33,12 @@ function readConfig_() {
     json["points"] = [];
     const firstRow = configSheet.getRange(hedder.indexOf("地点リスト") + 1, 2);
     const rowCount = firstRow.getNextDataCell(SpreadsheetApp.Direction.DOWN).getRow() - firstRow.getRow();
-    const data = configSheet.getRange(firstRow.getRow() + 1, 2, rowCount, 3).getValues();
+    const data = configSheet.getRange(firstRow.getRow() + 1, 2, rowCount, 8).getValues();
     for(const row of data){
-      json["points"].push({"name": row[0], "lat": row[1], "lon": row[2]});
+      const carTypes = row.slice(3, 8).filter(function(a){
+        return a;
+      });
+      json["points"].push({"name": row[0], "lat": row[1], "lon": row[2], "availableCars": carTypes});
     }
   }else{
     return -1;
@@ -128,6 +131,9 @@ function runGenerator() {
       return -1;
     case "UNDEFINED_DESTINATION":
       ui.alert("エラー", "設定シートの目的地が地点リストで定義されていません。", ui.ButtonSet.OK);
+      return -1;
+    case "UNDEFINED_CARTYPE":
+      ui.alert("エラー", "設定シートに未定義の車種名が含まれています。", ui.ButtonSet.OK);
       return -1;
   }
 }
