@@ -95,7 +95,7 @@ class Car {
   }
 
   evaluate(){
-    const costPerDistance = (16 + 20) * 2;
+    const costPerDistance = (this.carType["fuelCost"] + 20) * 2;
 
     //経路を確定
     let waypoints = this.getWaypoints().slice();
