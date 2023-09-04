@@ -9,7 +9,7 @@ let totalRentee = 0;      //借受可能総人数
 function vehicleManager(configData, inputData) {
   let distanceTable = [];
   let cars = [];
-  const version = "v2.0-alpha.2"
+  const version = "v2.0-alpha.2.1"
 
   //pointsに乗車地設定
   for(const point of configData["points"]){
