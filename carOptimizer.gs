@@ -1,17 +1,16 @@
 class CarOptimizer {
-  constructor(cars, fixedCost){
+  constructor(cars, distance){
     this.rentfeeTable = [];
-    this.fixedCost = fixedCost;
     this.maxMember = 0;
     this.maxRentee = 0;
     this.dpTable = [];
 
     //rentfeeTableの初期化
     for(const car of cars){
-      car["cost"] = car["rentCost"];
+      const totalCost = car["rentCost"] + (car["fuelCost"] + 20) * 2 * distance;
       for(let i = car["capacity"]; i > 0; i--){
-        if(this.rentfeeTable[i] == undefined || this.rentfeeTable[i]["cost"] > car["cost"]){
-          this.rentfeeTable[i] = car;
+        if(this.rentfeeTable[i] == undefined || this.rentfeeTable[i]["totalCost"] > totalCost){
+          this.rentfeeTable[i] = {"totalCost": totalCost, "carType": car};
         }else{
           break;
         }
@@ -27,16 +26,16 @@ class CarOptimizer {
       if(n > 8){
         this.dpTable[0][n] = {"carCombi": [], "rentfee": Infinity};
       }else{
-        this.dpTable[0][n] = {"carCombi": [this.rentfeeTable[n]], "rentfee": this.rentfeeTable[n]["cost"]};
+        this.dpTable[0][n] = {"carCombi": [this.rentfeeTable[n]["carType"]], "rentfee": this.rentfeeTable[n]["totalCost"]};
       }      
     }else{
       this.dpTable[k][n] = {"carCombi": [], "rentfee": Infinity};
       for(let i = 1; i < n; i++){
         if(i > 8) break;
-        if(this.rentfeeTable[i]["cost"] + this.dpTable[k-1][n-i]["rentfee"] < this.dpTable[k][n]["rentfee"]){
+        if(this.rentfeeTable[i]["totalCost"] + this.dpTable[k-1][n-i]["rentfee"] < this.dpTable[k][n]["rentfee"]){
           this.dpTable[k][n]["carCombi"] = this.dpTable[k-1][n-i]["carCombi"].slice();
-          this.dpTable[k][n]["carCombi"].push(this.rentfeeTable[i]);
-          this.dpTable[k][n]["rentfee"] = this.dpTable[k-1][n-i]["rentfee"] + this.rentfeeTable[i]["cost"];
+          this.dpTable[k][n]["carCombi"].push(this.rentfeeTable[i]["carType"]);
+          this.dpTable[k][n]["rentfee"] = this.dpTable[k-1][n-i]["rentfee"] + this.rentfeeTable[i]["totalCost"];
         }
       }
     }
@@ -55,8 +54,7 @@ class CarOptimizer {
     }
     let carCombi, rentfee;
     for(let k = 0; k < numRentee; k++){
-      let totalFixedCost = this.fixedCost * (k + 1);
-      if(k == 0 || this.dpTable[k][numMember]["rentfee"] + totalFixedCost < rentfee){
+      if(k == 0 || this.dpTable[k][numMember]["rentfee"] < rentfee){
         carCombi = this.dpTable[k][numMember]["carCombi"].slice();
         rentfee = this.dpTable[k][numMember]["rentfee"];
       }
@@ -67,6 +65,6 @@ class CarOptimizer {
   }
 
   getCarType(numMember){
-    return this.rentfeeTable[numMember];
+    return this.rentfeeTable[numMember]["carType"];
   }
 }

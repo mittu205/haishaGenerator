@@ -1,11 +1,12 @@
 class Point {
-  constructor(name, lat, lon){
-    this.ptName = name;
+  constructor(point){
+    this.ptName = point["name"];
     this.members = [];
-    this.lat = lat;
-    this.lon = lon;
+    this.lat = point["lat"];
+    this.lon = point["lon"];
+    this.carTypes = point["availableCars"];
     this.cars = [];
-    this.carOptimizer = carOptimizers[0];
+    this.carOptimizer = null;
     this.distanceTable = [];
   }
 
@@ -38,6 +39,19 @@ class Point {
     });
 
     return this.distanceTable;
+  }
+
+  initCarOptimizer(carData){
+    let cars = [];
+    for(const carName of this.carTypes){
+      const carType = carData.find(function(a){
+        return a["name"] == carName;
+      });
+      if(carType === undefined) return -1;
+      cars.push(carType);
+    }
+    this.carOptimizer = new CarOptimizer(cars, this.getDistance(destination));
+    return 0;
   }
 
   getDistance(point){

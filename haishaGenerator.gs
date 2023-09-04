@@ -1,5 +1,4 @@
 let points = {};
-let carOptimizers = [];
 let destination;
 let numAssigned = 0;    //割り当て済み人数
 
@@ -12,12 +11,9 @@ function vehicleManager(configData, inputData) {
   let cars = [];
   const version = "v2.0-alpha.2"
 
-  //rentfeeTableにレンタ価格設定
-  carOptimizers[0] = new CarOptimizer(configData["cars"], configData["fixedCost"]);
-
   //pointsに乗車地設定
   for(const point of configData["points"]){
-    points[point["name"]] = new Point(point["name"], point["lat"], point["lon"]);
+    points[point["name"]] = new Point(point);
   }
 
   //目的地設定
@@ -36,6 +32,12 @@ function vehicleManager(configData, inputData) {
     if(a["distance"] > b["distance"]) return 1;
     return 0;
   });
+
+  //rentfeeTable初期化
+  for(const point in points){
+    const result = points[point].initCarOptimizer(configData["cars"]);
+    if(result == -1) return {"fileVersion": version, "status": "UNDEFINED_CARTYPE"};
+  }
 
   //member読み込み、pointにmemberを登録
   for(const member of inputData["members"]){

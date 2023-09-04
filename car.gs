@@ -120,7 +120,7 @@ class Car {
     //評価値を導出
     const durationScore = totalDistance * this.getNumMember() * 500 / 40;
     const waypointScore = this.getWaypoints().length * 1000;
-    const expenceScore = this.carType["cost"] + totalDistance * costPerDistance;
+    const expenceScore = this.carType["rentCost"] + totalDistance * costPerDistance;
     const totalScore = durationScore + waypointScore + expenceScore;
     return totalScore;
   }
