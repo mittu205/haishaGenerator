@@ -29,9 +29,9 @@ function readConfig_() {
   }
 
   //乗車地リスト読み取り
-  if(hedder.indexOf("乗車地リスト") != -1){
+  if(hedder.indexOf("地点リスト") != -1){
     json["points"] = [];
-    const firstRow = configSheet.getRange(hedder.indexOf("乗車地リスト") + 1, 2);
+    const firstRow = configSheet.getRange(hedder.indexOf("地点リスト") + 1, 2);
     const rowCount = firstRow.getNextDataCell(SpreadsheetApp.Direction.DOWN).getRow() - firstRow.getRow();
     const data = configSheet.getRange(firstRow.getRow() + 1, 2, rowCount, 3).getValues();
     for(const row of data){
@@ -41,6 +41,15 @@ function readConfig_() {
     return -1;
   }
 
+
+  //目的地読み取り
+  if(hedder.indexOf("目的地") != -1){
+    json["destination"] = configSheet.getRange(hedder.indexOf("目的地") + 1, 2).getValue();
+  }else{
+    return -1;
+  }
+
+  //車両毎の固定費読み取り
   if(hedder.indexOf("車両毎の固定費") != -1){
     json["fixedCost"] = configSheet.getRange(hedder.indexOf("車両毎の固定費") + 1, 2).getValue();
   }else{
@@ -116,6 +125,9 @@ function runGenerator() {
       return -1;
     case "DRIVER_SHORTAGE":
       ui.alert("エラー", "借受人が不足しています。", ui.ButtonSet.OK);
+      return -1;
+    case "UNDEFINED_DESTINATION":
+      ui.alert("エラー", "設定シートの目的地が地点リストで定義されていません。", ui.ButtonSet.OK);
       return -1;
   }
 }
